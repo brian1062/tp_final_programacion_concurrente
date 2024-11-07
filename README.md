@@ -115,3 +115,4 @@ $$M(P1)+M(P2)=1$$$$M(P5)+M(P6)=1$$$$M(P7)+M(P8)=1$$$$M(P2)+M(P3)+M(P4)=5$$$$M(P1
 </p>
 
 Un uno en una posición indica que esa transición es parte de la invariante y un cero indica lo contrario.
+
