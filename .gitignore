@@ -1,4 +1,6 @@
 # Editor/IDE specific files
 .vscode/
 .idea/
+
+# Executables
 out
