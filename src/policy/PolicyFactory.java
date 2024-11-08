@@ -10,7 +10,7 @@ public class PolicyFactory {
 
     Policy create(){
         switch(type){
-            case PolicyBalancedType balanced -> { return new PolicyImpl(50.0); }
+            case PolicyBalancedType _ -> { return new PolicyImpl(50.0); }
             case PolicyPrioritizedType prioritized -> { return new PolicyImpl(prioritized.upPercentage); }
             default -> { throw new RuntimeException("Policy type not supported"); }
         }

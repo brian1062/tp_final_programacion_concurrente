@@ -8,6 +8,7 @@ class PolicyImpl implements Policy {
     private int upCount = 1;
     private int downCount = 1;
 
+    // Constructor
     PolicyImpl(double upPercentage){
         if(upPercentage < 0 || upPercentage > 100){
             throw new IllegalArgumentException("upPercentage must be between 0 and 100");
