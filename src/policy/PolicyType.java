@@ -1,3 +1,5 @@
 package policy;
 
-sealed class PolicyType permits PolicyBalancedType, PolicyPrioritizedType { }
+sealed abstract class PolicyType permits PolicyBalancedType, PolicyPrioritizedType {
+    abstract Policy createPolicy();
+}
