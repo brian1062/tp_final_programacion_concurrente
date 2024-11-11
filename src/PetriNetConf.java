@@ -2,9 +2,9 @@ import  java.util.ArrayList;
 import  java.util.List;
 
 public class PetriNetConf {
-    public static final int[] INITIAL_MARKING = {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
+    private static final int[] INITIAL_MARKING = {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
 
-    public static final int[][] INCIDENCE_MATRIX_OUT = {  //fijarse si era I+
+    private static final int[][] INCIDENCE_MATRIX_OUT = {  //I+
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},  //P0
         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  //P1
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  //P2
@@ -21,7 +21,7 @@ public class PetriNetConf {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},  //P13
         {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0}   //P14
     };
-    public static final int[][] INCIDENCE_MATRIX_IN = {  //fijarse si era I-
+    private static final int[][] INCIDENCE_MATRIX_IN = {  //I-
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  //P0
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  //P1
         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  //P2
@@ -39,21 +39,41 @@ public class PetriNetConf {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}   //P14
     };
 
-    public static List<Place> getPlaces(){
-        List<Place> places = new ArrayList<>();
+    private List<Place> places = new ArrayList<>();
+    private List<Transition> transitions= new ArrayList<>();
+
+
+    public PetriNetConf(){
+        // Initialize places list
         for (int i= 0; i<INITIAL_MARKING.length; i++){
             places.add(new Place("P"+i,INITIAL_MARKING[i]));
         }
-        return places;
-    }
-
-    public static List<Transition> getTransitions(){
-        List<Transition> transitions = new ArrayList<>();
+        // Initialize transitions list
         for (int i= 0; i<INCIDENCE_MATRIX_OUT[0].length; i++){
             transitions.add(new Transition("T"+i));
         }
         //TODO: set time for transitions
+
+
+    }
+
+    //getters
+    public int[] getInitialMarking(){
+        return INITIAL_MARKING;
+    }
+
+    public int[][] getIncidenceMatrixOut(){
+        return INCIDENCE_MATRIX_OUT;
+    }
+    public int[][] getIncidenceMatrixIn(){
+        return INCIDENCE_MATRIX_IN;
+    }
+    public List<Place> getPlaces(){
+        return places;
+    }
+    public List<Transition> getTransitions(){
         return transitions;
     }
-    
+
+
 }
