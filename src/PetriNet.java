@@ -90,6 +90,14 @@ public class PetriNet {
         }
     }
 
+    public int[] getMarking(){
+        return marking;
+    }
+
+    public List<Transition> getEnabledTransitions(){
+        return enabledTransitions;
+    }
+
 }
 
 
