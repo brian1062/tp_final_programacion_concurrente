@@ -39,8 +39,8 @@ public class PetriNetConf {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}   //P14
     };
 
-    private List<Place> places = new ArrayList<>();
-    private List<Transition> transitions= new ArrayList<>();
+    private final List<Place> places = new ArrayList<>();
+    private final List<Transition> transitions= new ArrayList<>();
 
 
     public PetriNetConf(){
@@ -59,7 +59,7 @@ public class PetriNetConf {
 
     //getters
     public int[] getInitialMarking(){
-        return INITIAL_MARKING;
+        return INITIAL_MARKING.clone();  //Use this method to not modify the marking
     }
 
     public int[][] getIncidenceMatrixOut(){
