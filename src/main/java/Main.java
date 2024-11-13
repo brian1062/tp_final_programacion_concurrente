@@ -1,7 +1,3 @@
-
-
-
-
 public class Main {
     //static boolean condicion = true;
 

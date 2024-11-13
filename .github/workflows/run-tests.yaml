@@ -1,0 +1,156 @@
+name: Java CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+            build
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Setup Node Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run tests with Gradle
+        run: ./gradlew test
+
+      - name: Generate JaCoCo coverage report
+        run: ./gradlew jacocoTestReport
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install xml2js
+
+      - name: Publish JUnit test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: JUnit Tests
+          path: build/test-results/**/*.xml
+          reporter: java-junit
+
+      - name: Generate Combined Test and Coverage Summary
+        uses: actions/github-script@v6
+        env:
+          MINIMUM_COVERAGE: "40"
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const xml2js = require('xml2js');
+
+            const junitPath = path.join('build', 'test-results', 'test', 'TEST-PetriNetTest.xml');
+            const jacocoPath = path.join('build', 'reports', 'jacoco', 'test', 'jacocoTestReport.xml');
+
+            let totalTests = 0, failures = 0, errors = 0, skipped = 0, successful = 0;
+            let totalLines = 0, coveredLines = 0, missedLines = 0;
+            let lineCoveragePercentage = "N/A";
+
+            if (fs.existsSync(junitPath)) {
+              const junitXml = fs.readFileSync(junitPath, 'utf-8');
+              const parser = new xml2js.Parser();
+
+              parser.parseString(junitXml, (err, result) => {
+                if (err) {
+                  throw new Error(`Failed to parse JUnit report: ${err.message}`);
+                }
+
+                const testsuite = result.testsuite.$;
+                totalTests = parseInt(testsuite.tests);
+                failures = parseInt(testsuite.failures);
+                errors = parseInt(testsuite.errors);
+                skipped = parseInt(testsuite.skipped);
+                successful = totalTests - failures - errors - skipped;
+              });
+            }
+
+            if (fs.existsSync(jacocoPath)) {
+              const jacocoXml = fs.readFileSync(jacocoPath, 'utf-8');
+              const parser = new xml2js.Parser();
+
+              parser.parseString(jacocoXml, (err, result) => {
+                if (err) {
+                  throw new Error(`Failed to parse JaCoCo report: ${err.message}`);
+                }
+
+                const counters = result.report.counter.filter(c => c.$.type === 'LINE');
+                counters.forEach(counter => {
+                  missedLines += parseInt(counter.$.missed);
+                  coveredLines += parseInt(counter.$.covered);
+                });
+
+                totalLines = missedLines + coveredLines;
+                lineCoveragePercentage = totalLines > 0
+                  ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
+                  : '0.00%';
+              });
+            }
+
+            //  Check for valid coverage percentage
+            let auxLineCoveragePercentage = parseFloat(lineCoveragePercentage.replace('%', ''));
+            if (auxLineCoveragePercentage < 0 || auxLineCoveragePercentage > 100) {
+              core.setFailed(`Invalid line coverage percentage: ${lineCoveragePercentage}`);
+            }
+
+            if (auxLineCoveragePercentage < parseFloat(process.env.MINIMUM_COVERAGE)) {
+              core.setFailed(`Line coverage is below the minimum threshold of ${process.env.MINIMUM_COVERAGE}%: ${lineCoveragePercentage}`);
+            }
+
+            const summary = `
+            # Test and Coverage Summary
+            
+            ## Test Results
+            - **Total Tests:** ${totalTests}
+            - **Successful:** ${successful}
+            - **Failures:** ${failures}
+            - **Errors:** ${errors}
+            - **Skipped:** ${skipped}
+            
+            ## Code Coverage
+            - **Line Coverage:** ${lineCoveragePercentage}
+            - **Total Lines:** ${totalLines}
+            - **Covered Lines:** ${coveredLines}
+            - **Missed Lines:** ${missedLines}
+            `;
+            
+            console.log(summary);
+            await core.summary.addRaw(summary).write();
