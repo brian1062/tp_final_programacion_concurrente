@@ -32,8 +32,8 @@ jobs:
 
       - name: Compile
         run: |
-          javac -d bin --release 21 -cp "lib/*:src" $(find src -name "*.java")
-          javac -d bin --release 21 -cp "bin:lib/*" $(find tests -name "*.java")
+          javac -d bin --release 21 --enable-preview -cp "lib/*:src" $(find src -name "*.java")
+          javac -d bin --release 21 --enable-preview -cp "bin:lib/*" $(find tests -name "*.java")
 
       - name: Run tests
         run: |
