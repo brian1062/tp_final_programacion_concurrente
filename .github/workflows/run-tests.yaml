@@ -38,7 +38,7 @@ jobs:
       - name: Run tests
         run: |
           mkdir -p test-results
-          java -jar lib/junit-platform-console-standalone-1.9.2.jar \
+          java --enable-preview -jar lib/junit-platform-console-standalone-1.9.2.jar \
                --class-path bin \
                --scan-class-path \
                --include-classname=.*Test \
