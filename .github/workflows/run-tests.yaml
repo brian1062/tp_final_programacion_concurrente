@@ -77,6 +77,9 @@ jobs:
           script: |
             const fs = require('fs');
 
+            // Debugging logs
+            console.log("Starting Execution Summary Generation...");
+
             // Initialize variables for test results
             let totalTests = 'N/A', failures = 'N/A', errors = 'N/A';
             let coveragePercentage = 'N/A', totalLines = 0, coveredLines = 0, missedLines = 0;
@@ -84,26 +87,42 @@ jobs:
             // Parse JUnit report
             const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
             if (fs.existsSync(junitFilePath)) {
+              console.log("JUnit report found. Parsing...");
               const junitData = fs.readFileSync(junitFilePath, 'utf-8');
+              console.log("JUnit Report Content:", junitData); // Print JUnit content for debugging
+
               const junitMatches = junitData.match(/tests="(\d+)" failures="(\d+)" errors="(\d+)"/);
               if (junitMatches) {
                 totalTests = junitMatches[1];
                 failures = junitMatches[2];
                 errors = junitMatches[3];
+                console.log(`Extracted JUnit Results - Tests: ${totalTests}, Failures: ${failures}, Errors: ${errors}`);
+              } else {
+                console.log("No matches found in JUnit report.");
               }
+            } else {
+              console.log("JUnit report not found.");
             }
 
             // Parse JaCoCo report
             const jacocoFilePath = 'coverage-reports/coverage.xml';
             if (fs.existsSync(jacocoFilePath)) {
+              console.log("JaCoCo coverage report found. Parsing...");
               const jacocoData = fs.readFileSync(jacocoFilePath, 'utf-8');
+              console.log("JaCoCo Report Content:", jacocoData); // Print JaCoCo content for debugging
+
               const lineCoverageMatch = jacocoData.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
               if (lineCoverageMatch) {
                 missedLines = parseInt(lineCoverageMatch[1], 10);
                 coveredLines = parseInt(lineCoverageMatch[2], 10);
                 totalLines = missedLines + coveredLines;
                 coveragePercentage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) : '0.00';
+                console.log(`Extracted JaCoCo Coverage - Missed Lines: ${missedLines}, Covered Lines: ${coveredLines}, Coverage Percentage: ${coveragePercentage}%`);
+              } else {
+                console.log("No matches found in JaCoCo report.");
               }
+            } else {
+              console.log("JaCoCo report not found.");
             }
 
             // Create a combined summary
@@ -119,6 +138,8 @@ jobs:
             - **Covered Lines**: ${coveredLines}
             - **Missed Lines**: ${missedLines}
             `;
+            
+            console.log("Generated Summary:", summary);
             
             // Add summary to GitHub Actions "Summary" tab
             core.summary.addRaw(summary).write();
