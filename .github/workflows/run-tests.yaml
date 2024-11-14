@@ -24,64 +24,68 @@ jobs:
           distribution: 'temurin'
 
       - name: Create directories
-        run: mkdir -p lib bin test-results coverage-reports
-
+        run: |
+          mkdir -p lib
+          mkdir -p bin
+          mkdir -p test-results
+          mkdir -p coverage-reports
       - name: Download dependencies
         run: |
           wget -P lib/ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
           wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar
           wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar
-
       - name: Compile source files
-        run: javac -d bin --release 21 --enable-preview -cp "lib/*:src" $(find src -name "*.java")
-
+        run: |
+          javac -d bin \
+                --release 21 \
+                --enable-preview \
+                -cp "lib/*:src" \
+                $(find src -name "*.java")
       - name: Compile test files
-        run: javac -d bin --release 21 --enable-preview -cp "bin:lib/*" $(find tests -name "*.java")
-
+        run: |
+          javac -d bin \
+                --release 21 \
+                --enable-preview \
+                -cp "bin:lib/*" \
+                $(find tests -name "*.java")
       - name: Run tests with coverage
         run: |
-          java --enable-preview -javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=coverage-reports/jacoco.exec \
+          java --enable-preview \
+               -javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=coverage-reports/jacoco.exec \
                -jar lib/junit-platform-console-standalone-1.9.2.jar \
-               --class-path bin --scan-class-path --include-classname=.*Test --reports-dir test-results
-
-      - name: Generate Coverage Report
-        run: java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report coverage-reports/jacoco.exec \
-          --classfiles bin --sourcefiles src --xml coverage-reports/coverage.xml
-
-      - name: Create Test Summary
-        uses: actions/github-script@v6
+               --class-path bin \
+               --scan-class-path \
+               --include-classname=.*Test \
+               --reports-dir test-results
+      - name: Generate coverage report
+        run: |
+          java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report coverage-reports/jacoco.exec \
+               --classfiles bin \
+               --sourcefiles src \
+               --html coverage-reports/html \
+               --xml coverage-reports/coverage.xml
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
         with:
-          script: |
-            const core = require('@actions/core');
-            const fs = require('fs');
+          name: JUnit Tests           # Name of the check run which will be created
+          path: test-results/TEST-junit-jupiter.xml    # Path to test results
+          reporter: java-junit        # Format of test results
+          fail-on-error: true
 
-            // Read JUnit results
-            const junitResults = fs.readFileSync('test-results/TEST-junit-jupiter.xml', 'utf8');
-            const junitParser = require('fast-xml-parser');
-            const junitData = junitParser.parse(junitResults);
+      - name: JaCoCo Coverage Report
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: coverage-reports/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+          title: 📊 JaCoCo Code Coverage Report
+          update-comment: true
 
-            // Extract JUnit summary
-            const tests = junitData.testsuite.tests;
-            const failures = junitData.testsuite.failures;
-
-            // Read JaCoCo coverage results
-            const jacocoResults = fs.readFileSync('coverage-reports/coverage.xml', 'utf8');
-            const jacocoParser = require('fast-xml-parser');
-            const jacocoData = jacocoParser.parse(jacocoResults);
-
-            const coverage = jacocoData.report.counter.find(c => c.type === 'LINE').covered;
-            const total = jacocoData.report.counter.find(c => c.type === 'LINE').missed + coverage;
-            const coveragePercent = ((coverage / total) * 100).toFixed(2);
-
-            // Create the summary
-            const summary = `
-  ### Test Results
-  - Total Tests: ${tests}
-  - Failures: ${failures}
-
-  ### Code Coverage
-  - Line Coverage: ${coveragePercent}%
-  `;
-  
-  core.info(summary);
-  core.summary.addRaw(summary).write();
+      - name: Store coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: coverage-reports/html/**
+          if-no-files-found: error
