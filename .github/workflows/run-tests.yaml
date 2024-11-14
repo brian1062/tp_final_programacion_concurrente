@@ -76,7 +76,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const core = require('@actions/core');
 
             // Read JUnit test results
             const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
@@ -101,11 +100,17 @@ jobs:
             - Total Tests: ${totalTests}
             - Failures: ${failures}
             - Errors: ${errors}
-          
+            
             ### Code Coverage
             - Line Coverage: ${coveragePercentage}%
             - Total Lines: ${totalLines}
             - Covered Lines: ${coveredLines}
+            - Missed Lines: ${missedLines}
+            `;
+            
+            // Add summary to GitHub Actions "Summary" tab
+            core.summary.addRaw(summary).write();
+
             - Missed Lines: ${missedLines}
             `;
             
