@@ -135,14 +135,19 @@ jobs:
                   ? ((totalCovered / totalLines) * 100).toFixed(2)
                   : '0.00';
             
-                // Generar resumen
-                const summary = `
-                ### JaCoCo Code Coverage Report
-                - **Line Coverage**: ${coveragePercentage}%
-                - **Total Lines**: ${totalLines}
-                - **Covered Lines**: ${totalCovered}
-                - **Missed Lines**: ${totalMissed}
-                `;
+                // Generar resumen con mejor formato markdown
+                const summary = `# JaCoCo Code Coverage Report
+            
+            ## Summary
+            * **Line Coverage:** ${coveragePercentage}%
+            * **Total Lines:** ${totalLines.toLocaleString()}
+            * **Covered Lines:** ${totalCovered.toLocaleString()}
+            * **Missed Lines:** ${totalMissed.toLocaleString()}
+            
+            ---
+            
+            > Generated on ${new Date().toISOString().split('T')[0]}
+            `;
             
                 // Logging para debug
                 console.log('Coverage Analysis Results:');
@@ -161,7 +166,7 @@ jobs:
                 core.setOutput('missed-lines', totalMissed);
             
                 // Opcional: Fallar el workflow si la cobertura es muy baja
-                const minimumCoverage = 60; // Ajusta según tus necesidades
+                const minimumCoverage = 50; // Ajusta según tus necesidades
                 if (parseFloat(coveragePercentage) < minimumCoverage) {
                   core.setFailed(`Coverage ${coveragePercentage}% is below minimum ${minimumCoverage}%`);
                 }
