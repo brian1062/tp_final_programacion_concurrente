@@ -97,24 +97,16 @@ jobs:
             // Create a combined summary
             const summary = `
             ### Test Results
-            - Total Tests: ${totalTests}
-            - Failures: ${failures}
-            - Errors: ${errors}
+            - **Total Tests**: ${totalTests}
+            - **Failures**: ${failures}
+            - **Errors**: ${errors}
             
             ### Code Coverage
-            - Line Coverage: ${coveragePercentage}%
-            - Total Lines: ${totalLines}
-            - Covered Lines: ${coveredLines}
-            - Missed Lines: ${missedLines}
+            - **Line Coverage**: ${coveragePercentage}%
+            - **Total Lines**: ${totalLines}
+            - **Covered Lines**: ${coveredLines}
+            - **Missed Lines**: ${missedLines}
             `;
-            
-            // Add summary to GitHub Actions "Summary" tab
-            core.summary.addRaw(summary).write();
-
-            - Missed Lines: ${missedLines}
-            `;
-            
-            core.info(summary);
             
             // Add summary to GitHub Actions "Summary" tab
             core.summary.addRaw(summary).write();
