@@ -77,22 +77,34 @@ jobs:
           script: |
             const fs = require('fs');
 
-            // Read JUnit test results
-            const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
-            const junitData = fs.readFileSync(junitFilePath, 'utf-8');
-            const junitMatches = junitData.match(/tests="(\d+)" failures="(\d+)" errors="(\d+)"/);
-            const totalTests = junitMatches ? junitMatches[1] : 'N/A';
-            const failures = junitMatches ? junitMatches[2] : 'N/A';
-            const errors = junitMatches ? junitMatches[3] : 'N/A';
+            // Initialize variables for test results
+            let totalTests = 'N/A', failures = 'N/A', errors = 'N/A';
+            let coveragePercentage = 'N/A', totalLines = 0, coveredLines = 0, missedLines = 0;
 
-            // Read JaCoCo coverage report
+            // Parse JUnit report
+            const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
+            if (fs.existsSync(junitFilePath)) {
+              const junitData = fs.readFileSync(junitFilePath, 'utf-8');
+              const junitMatches = junitData.match(/tests="(\d+)" failures="(\d+)" errors="(\d+)"/);
+              if (junitMatches) {
+                totalTests = junitMatches[1];
+                failures = junitMatches[2];
+                errors = junitMatches[3];
+              }
+            }
+
+            // Parse JaCoCo report
             const jacocoFilePath = 'coverage-reports/coverage.xml';
-            const jacocoData = fs.readFileSync(jacocoFilePath, 'utf-8');
-            const lineCoverageMatch = jacocoData.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
-            const missedLines = lineCoverageMatch ? parseInt(lineCoverageMatch[1]) : 0;
-            const coveredLines = lineCoverageMatch ? parseInt(lineCoverageMatch[2]) : 0;
-            const totalLines = missedLines + coveredLines;
-            const coveragePercentage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) : 'N/A';
+            if (fs.existsSync(jacocoFilePath)) {
+              const jacocoData = fs.readFileSync(jacocoFilePath, 'utf-8');
+              const lineCoverageMatch = jacocoData.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
+              if (lineCoverageMatch) {
+                missedLines = parseInt(lineCoverageMatch[1], 10);
+                coveredLines = parseInt(lineCoverageMatch[2], 10);
+                totalLines = missedLines + coveredLines;
+                coveragePercentage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) : '0.00';
+              }
+            }
 
             // Create a combined summary
             const summary = `
@@ -110,11 +122,3 @@ jobs:
             
             // Add summary to GitHub Actions "Summary" tab
             core.summary.addRaw(summary).write();
-
-      - name: Debug generated files
-        run: |
-          echo "JUnit Test Results:"
-          cat test-results/TEST-junit-jupiter.xml || echo "No JUnit test results found."
-          echo "JaCoCo Coverage Report:"
-          cat coverage-reports/coverage.xml || echo "No JaCoCo coverage report found."
-
