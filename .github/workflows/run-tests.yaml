@@ -2,12 +2,16 @@ name: Java CI
 
 on:
   push:
+  #    branches:
+  #      - main
+  #      - dev
   pull_request:
-  workflow_dispatch:
+  workflow_dispatch: # allows us to manually run the actions
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions: write-all
 
     steps:
       - name: Checkout
