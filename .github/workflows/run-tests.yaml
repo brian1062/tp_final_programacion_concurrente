@@ -71,6 +71,9 @@ jobs:
                --html coverage-reports/html \
                --xml coverage-reports/coverage.xml
 
+      - name: Install xml2js
+        run: npm install xml2js
+
       - name: Parse JaCoCo Report
         uses: actions/github-script@v6
         with:
