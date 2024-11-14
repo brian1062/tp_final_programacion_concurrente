@@ -76,6 +76,8 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            
+            echo "Printing
 
             // Read JUnit test results
             const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
@@ -110,3 +112,11 @@ jobs:
             
             // Add summary to GitHub Actions "Summary" tab
             core.summary.addRaw(summary).write();
+
+      - name: Debug generated files
+        run: |
+          echo "JUnit Test Results:"
+          cat test-results/TEST-junit-jupiter.xml || echo "No JUnit test results found."
+          echo "JaCoCo Coverage Report:"
+          cat coverage-reports/coverage.xml || echo "No JaCoCo coverage report found."
+
