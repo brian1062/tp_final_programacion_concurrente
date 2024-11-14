@@ -71,55 +71,104 @@ jobs:
                --html coverage-reports/html \
                --xml coverage-reports/coverage.xml
 
-      - name: Parse JaCoCo Report
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-
-            // Ruta del archivo XML generado por JaCoCo
+  - name: Parse JaCoCo Report
+    uses: actions/github-script@v6
+    with:
+      script: |
+        const fs = require('fs');
+        const xml2js = require('xml2js');
+        const util = require('util');
+        
+        async function parseJacocoCoverage() {
+          try {
             const jacocoFilePath = 'coverage-reports/coverage.xml';
-
-            // Inicializar variables para almacenar los resultados
-            let coveragePercentage = 'N/A', totalLines = 0, coveredLines = 0, missedLines = 0;
-
-            // Verificar si el archivo existe
-            if (fs.existsSync(jacocoFilePath)) {
-              console.log("JaCoCo report found. Parsing...");
-
-              // Leer el contenido del archivo
-              const jacocoData = fs.readFileSync(jacocoFilePath, 'utf-8');
-              console.log("JaCoCo Report Content:", jacocoData); // Imprimir contenido del archivo para depuración
-
-              // Buscar el nodo <counter type="LINE">
-              const lineCoverageMatch = jacocoData.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
-              if (lineCoverageMatch) {
-                // Extraer datos de las líneas no cubiertas y cubiertas
-                missedLines = parseInt(lineCoverageMatch[1], 10);
-                coveredLines = parseInt(lineCoverageMatch[2], 10);
-                totalLines = missedLines + coveredLines;
-
-                // Calcular el porcentaje de cobertura
-                coveragePercentage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) : '0.00';
-                console.log(`Extracted JaCoCo Coverage - Missed Lines: ${missedLines}, Covered Lines: ${coveredLines}, Coverage Percentage: ${coveragePercentage}%`);
-              } else {
-                console.log("No <counter type=\"LINE\"> node found in JaCoCo report.");
-              }
-            } else {
-              console.log("JaCoCo report not found.");
+        
+            // Verificar si existe el archivo
+            if (!fs.existsSync(jacocoFilePath)) {
+              throw new Error('JaCoCo report not found at: ' + jacocoFilePath);
             }
-
-            // Crear resumen
+        
+            // Leer el archivo XML
+            const xmlData = fs.readFileSync(jacocoFilePath, 'utf-8');
+        
+            // Parsear XML a JSON
+            const parser = new xml2js.Parser();
+            const parseXml = util.promisify(parser.parseString);
+            const result = await parseXml(xmlData);
+        
+            // Extraer los contadores del reporte
+            const report = result.report;
+            let totalMissed = 0;
+            let totalCovered = 0;
+        
+            // Función recursiva para sumar contadores de líneas
+            function sumLineCounters(element) {
+              if (element.counter) {
+                const lineCounters = element.counter.filter(c => c.$.type === 'LINE');
+                for (const counter of lineCounters) {
+                  totalMissed += parseInt(counter.$.missed || 0);
+                  totalCovered += parseInt(counter.$.covered || 0);
+                }
+              }
+        
+              // Recursivamente procesar todos los elementos hijos
+              for (const key in element) {
+                if (Array.isArray(element[key])) {
+                  element[key].forEach(child => {
+                    if (typeof child === 'object') {
+                      sumLineCounters(child);
+                    }
+                  });
+                }
+              }
+            }
+        
+            // Comenzar el procesamiento desde la raíz
+            sumLineCounters(report);
+        
+            // Calcular métricas
+            const totalLines = totalMissed + totalCovered;
+            const coveragePercentage = totalLines > 0 
+              ? ((totalCovered / totalLines) * 100).toFixed(2)
+              : '0.00';
+        
+            // Generar resumen
             const summary = `
             ### JaCoCo Code Coverage Report
             - **Line Coverage**: ${coveragePercentage}%
             - **Total Lines**: ${totalLines}
-            - **Covered Lines**: ${coveredLines}
-            - **Missed Lines**: ${missedLines}
+            - **Covered Lines**: ${totalCovered}
+            - **Missed Lines**: ${totalMissed}
             `;
-            
-            console.log("Generated Summary:", summary);
-            
-            // Añadir el resumen a la pestaña "Summary" de GitHub Actions
-            core.summary.addRaw(summary).write();
+        
+            // Logging para debug
+            console.log('Coverage Analysis Results:');
+            console.log(`Total Lines: ${totalLines}`);
+            console.log(`Covered Lines: ${totalCovered}`);
+            console.log(`Missed Lines: ${totalMissed}`);
+            console.log(`Coverage Percentage: ${coveragePercentage}%`);
+        
+            // Escribir el resumen en GitHub Actions
+            await core.summary.addRaw(summary).write();
+        
+            // Opcional: Establecer output para usar en otros steps
+            core.setOutput('coverage-percentage', coveragePercentage);
+            core.setOutput('total-lines', totalLines);
+            core.setOutput('covered-lines', totalCovered);
+            core.setOutput('missed-lines', totalMissed);
+        
+            // Opcional: Fallar el workflow si la cobertura es muy baja
+            const minimumCoverage = 60; // Ajusta según tus necesidades
+            if (parseFloat(coveragePercentage) < minimumCoverage) {
+              core.setFailed(`Coverage ${coveragePercentage}% is below minimum ${minimumCoverage}%`);
+            }
+        
+          } catch (error) {
+            console.error('Error processing JaCoCo report:', error);
+            core.setFailed(error.message);
+          }
+        }
+        
+        // Ejecutar el análisis
+        await parseJacocoCoverage();
 
