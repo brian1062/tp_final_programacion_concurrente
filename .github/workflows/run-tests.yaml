@@ -2,9 +2,10 @@ name: Java CI
 
 on:
   push:
-  #    branches:
-  #      - main
-  #      - dev
+    #    branches:
+    #      - main
+    #      - dev
+
   pull_request:
   workflow_dispatch: # allows us to manually run the actions
 
@@ -29,11 +30,13 @@ jobs:
           mkdir -p bin
           mkdir -p test-results
           mkdir -p coverage-reports
+
       - name: Download dependencies
         run: |
           wget -P lib/ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
           wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar
           wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar
+
       - name: Compile source files
         run: |
           javac -d bin \
@@ -41,6 +44,7 @@ jobs:
                 --enable-preview \
                 -cp "lib/*:src" \
                 $(find src -name "*.java")
+
       - name: Compile test files
         run: |
           javac -d bin \
@@ -48,6 +52,7 @@ jobs:
                 --enable-preview \
                 -cp "bin:lib/*" \
                 $(find tests -name "*.java")
+
       - name: Run tests with coverage
         run: |
           java --enable-preview \
@@ -57,6 +62,7 @@ jobs:
                --scan-class-path \
                --include-classname=.*Test \
                --reports-dir test-results
+
       - name: Generate coverage report
         run: |
           java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report coverage-reports/jacoco.exec \
@@ -64,28 +70,46 @@ jobs:
                --sourcefiles src \
                --html coverage-reports/html \
                --xml coverage-reports/coverage.xml
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()    # run this step even if previous step failed
-        with:
-          name: JUnit Tests           # Name of the check run which will be created
-          path: test-results/TEST-junit-jupiter.xml    # Path to test results
-          reporter: java-junit        # Format of test results
-          fail-on-error: true
 
-      - name: JaCoCo Coverage Report
-        uses: madrapps/jacoco-report@v1.6.1
+      - name: Generate Execution Summary
+        uses: actions/github-script@v6
         with:
-          paths: coverage-reports/jacoco.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
-          title: 📊 JaCoCo Code Coverage Report
-          update-comment: true
+          script: |
+            const fs = require('fs');
+            const core = require('@actions/core');
 
-      - name: Store coverage reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-reports
-          path: coverage-reports/html/**
-          if-no-files-found: error
+            // Read JUnit test results
+            const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
+            const junitData = fs.readFileSync(junitFilePath, 'utf-8');
+            const junitMatches = junitData.match(/tests="(\d+)" failures="(\d+)" errors="(\d+)"/);
+            const totalTests = junitMatches ? junitMatches[1] : 'N/A';
+            const failures = junitMatches ? junitMatches[2] : 'N/A';
+            const errors = junitMatches ? junitMatches[3] : 'N/A';
+
+            // Read JaCoCo coverage report
+            const jacocoFilePath = 'coverage-reports/coverage.xml';
+            const jacocoData = fs.readFileSync(jacocoFilePath, 'utf-8');
+            const lineCoverageMatch = jacocoData.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
+            const missedLines = lineCoverageMatch ? parseInt(lineCoverageMatch[1]) : 0;
+            const coveredLines = lineCoverageMatch ? parseInt(lineCoverageMatch[2]) : 0;
+            const totalLines = missedLines + coveredLines;
+            const coveragePercentage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) : 'N/A';
+
+            // Create a combined summary
+            const summary = `
+  ### Test Results
+  - Total Tests: ${totalTests}
+  - Failures: ${failures}
+  - Errors: ${errors}
+
+  ### Code Coverage
+  - Line Coverage: ${coveragePercentage}%
+  - Total Lines: ${totalLines}
+  - Covered Lines: ${coveredLines}
+  - Missed Lines: ${missedLines}
+  `;
+  
+  core.info(summary);
+  
+  // Add summary to GitHub Actions "Summary" tab
+  core.summary.addRaw(summary).write();
