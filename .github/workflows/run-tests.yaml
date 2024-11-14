@@ -76,8 +76,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
-            echo "Printing
 
             // Read JUnit test results
             const junitFilePath = 'test-results/TEST-junit-jupiter.xml';
