@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-#    branches:
-#      - main
-#      - dev
+  #    branches:
+  #      - main
+  #      - dev
   pull_request:
   workflow_dispatch: # allows us to manually run the actions
 
@@ -67,31 +67,32 @@ jobs:
           java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report coverage-reports/jacoco.exec \
                --classfiles bin \
                --sourcefiles src \
-               --html coverage-reports/html \
                --xml coverage-reports/coverage.xml
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()    # run this step even if previous step failed
+        if: success() || failure()    # Run this step even if previous step failed
         with:
           name: JUnit Tests           # Name of the check run which will be created
           path: test-results/TEST-junit-jupiter.xml    # Path to test results
           reporter: java-junit        # Format of test results
           fail-on-error: true
 
+      - name: Coverage Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Coverage Report
+          path: coverage-reports/coverage.xml
+          reporter: jacoco
+          fail-on-error: true
+
       - name: JaCoCo Coverage Report
         uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: coverage-reports/jacoco.xml
+          paths: coverage-reports/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
           title: 📊 JaCoCo Code Coverage Report
           update-comment: true
-
-      - name: Store coverage reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-reports
-          path: coverage-reports/html/**
-          if-no-files-found: error
