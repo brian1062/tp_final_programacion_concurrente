@@ -23,27 +23,52 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Create lib directory
-        run: mkdir -p lib
+      - name: Create directories
+        run: |
+          mkdir -p lib
+          mkdir -p bin
+          mkdir -p test-results
+          mkdir -p coverage-reports
 
-      - name: Download JUnit Dependencies
+      - name: Download dependencies
         run: |
           wget -P lib/ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
+          wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11-nodeps.jar
+          wget -P lib/ https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar
 
-      - name: Compile
+      - name: Compile source files
         run: |
-          javac -d bin --release 21 --enable-preview -cp "lib/*:src" $(find src -name "*.java")
-          javac -d bin --release 21 --enable-preview -cp "bin:lib/*" $(find tests -name "*.java")
+          javac -d bin \
+                --release 21 \
+                --enable-preview \
+                -cp "lib/*:src" \
+                $(find src -name "*.java")
 
-      - name: Run tests
+      - name: Compile test files
         run: |
-          mkdir -p test-results
+          javac -d bin \
+                --release 21 \
+                --enable-preview \
+                -cp "bin:lib/*" \
+                $(find tests -name "*.java")
+
+      - name: Run tests with coverage
+        run: |
           java --enable-preview \
+               -javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=coverage-reports/jacoco.exec \
                -jar lib/junit-platform-console-standalone-1.9.2.jar \
                --class-path bin \
                --scan-class-path \
                --include-classname=.*Test \
                --reports-dir test-results
+
+      - name: Generate coverage report
+        run: |
+          java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report coverage-reports/jacoco.exec \
+               --classfiles bin \
+               --sourcefiles src \
+               --html coverage-reports/html \
+               --xml coverage-reports/coverage.xml
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -53,3 +78,26 @@ jobs:
           path: test-results/TEST-junit-jupiter.xml    # Path to test results
           reporter: java-junit        # Format of test results
           fail-on-error: true
+
+      - name: Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage-reports/coverage.xml
+          badge: true
+          format: markdown
+          output: both
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: test-coverage
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Store coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: coverage-reports/html/**
+          if-no-files-found: error
