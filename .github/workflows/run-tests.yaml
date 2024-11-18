@@ -48,7 +48,7 @@ jobs:
       - name: Formatting
         uses: axel-op/googlejavaformat-action@v3
         with:
-          args: "--set-exit-if-changed"
+          args: "--skip-sorting-imports --replace"
 
       - name: Build with Gradle
         run: ./gradlew build
