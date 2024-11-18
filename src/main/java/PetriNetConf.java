@@ -53,27 +53,17 @@ public class PetriNetConf {
             transitions.add(new Transition("T"+i));
         }
         //TODO: set time for transitions
-
-
     }
 
-    //getters
-    public int[] getInitialMarking(){
-        return INITIAL_MARKING.clone();  //Use this method to not modify the marking
-    }
+    // Getters
+    public int[] getInitialMarking() { return INITIAL_MARKING.clone(); }
 
-    public int[][] getIncidenceMatrixOut(){
-        return INCIDENCE_MATRIX_OUT;
-    }
-    public int[][] getIncidenceMatrixIn(){
-        return INCIDENCE_MATRIX_IN;
-    }
-    public List<Place> getPlaces(){
-        return places;
-    }
-    public List<Transition> getTransitions(){
-        return transitions;
-    }
+    public int[][] getIncidenceMatrixOut(){ return INCIDENCE_MATRIX_OUT.clone(); }
 
+    public int[][] getIncidenceMatrixIn(){ return INCIDENCE_MATRIX_IN.clone(); }
+
+    public List<Place> getPlaces(){ return places; }
+
+    public List<Transition> getTransitions(){ return transitions; }
 
 }
