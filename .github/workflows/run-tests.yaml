@@ -33,8 +33,12 @@ jobs:
         uses: cicirello/jacoco-badge-generator@v2
         with:
           jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
-          fail-on-coverage-decrease: true
           generate-summary: true
+          fail-on-coverage-decrease: true
+          fail-if-branches-less-than: "%70"
+          fail-if-coverage-less-than: "40%"
+          generate-workflow-summary: true
+          workflow-summary-heading: Test Coverage Summary
 
       - name: Publish JUnit test results
         uses: dorny/test-reporter@v1
