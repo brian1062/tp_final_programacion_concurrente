@@ -37,12 +37,12 @@ jobs:
       - name: Install Dependencies
         run: npm install xml2js
 
-      - name: Publish JUnit test results
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Tests
-          path: build/test-results/**/*.xml
-          reporter: java-junit
+#      - name: Publish JUnit test results
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: JUnit Tests
+#          path: build/test-results/**/*.xml
+#          reporter: java-junit
 
       - name: Generate Combined Test and Coverage Summary
         uses: actions/github-script@v6
