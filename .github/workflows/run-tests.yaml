@@ -33,7 +33,6 @@ jobs:
         uses: cicirello/jacoco-badge-generator@v2
         with:
           jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
-          output-directory: build/reports/jacoco/test
           fail-on-coverage-decrease: true
           generate-summary: true
 
