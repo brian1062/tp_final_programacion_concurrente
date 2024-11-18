@@ -29,6 +29,14 @@ jobs:
       - name: Generate JaCoCo coverage report
         run: ./gradlew jacocoTestReport
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install xml2js
+
       - name: Generate Combined Test and Coverage Summary
         uses: actions/github-script@v6
         with:
