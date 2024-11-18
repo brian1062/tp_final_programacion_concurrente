@@ -15,6 +15,9 @@ public class Transition {
     }
 
     public void setTime(int time) {
+        if (time < 0) {
+            throw new IllegalArgumentException("Time cannot be negative");
+        }
         this.time = time;
     }
 }

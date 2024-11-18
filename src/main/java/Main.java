@@ -30,8 +30,6 @@ public class Main {
         System.out.println("After firing transition 3:");
         petriNet.printMarking();
         petriNet.printEnabledTransitions();
-
-
     }
 
 }
