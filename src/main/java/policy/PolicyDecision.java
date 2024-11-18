@@ -1,3 +1,6 @@
 package policy;
 
-enum PolicyDecision{ UP, DOWN }
+enum PolicyDecision {
+  UP,
+  DOWN
+}

@@ -1,3 +1,3 @@
 package policy;
 
-public final class PolicyBalancedType extends PolicyType { }
+public final class PolicyBalancedType extends PolicyType {}

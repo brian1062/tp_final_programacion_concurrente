@@ -1,3 +1,3 @@
 package policy;
 
-sealed class PolicyType permits PolicyBalancedType, PolicyPrioritizedType { }
+sealed class PolicyType permits PolicyBalancedType, PolicyPrioritizedType {}
