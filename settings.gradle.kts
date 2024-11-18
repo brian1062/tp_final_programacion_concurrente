@@ -1,1 +1,1 @@
-rootProject.name = "SistemaDeAgenciaDeViajes-Gradle"
+rootProject.name = "SistemaDeAgenciaDeViajes"
