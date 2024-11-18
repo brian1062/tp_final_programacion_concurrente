@@ -118,7 +118,7 @@ jobs:
               });
             }
 
-            # Check for valid coverage percentage
+            //  Check for valid coverage percentage
             let auxLineCoveragePercentage = parseFloat(lineCoveragePercentage.replace('%', ''));
             if (auxLineCoveragePercentage < 0 || auxLineCoveragePercentage > 100) {
               core.setFailed(`Invalid line coverage percentage: ${lineCoveragePercentage}`);
