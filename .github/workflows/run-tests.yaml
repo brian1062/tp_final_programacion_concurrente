@@ -52,9 +52,12 @@ jobs:
             const path = require('path');
             const xml2js = require('xml2js');
 
-            const junitPath = path.join('build', 'test-results', 'test', 'TEST-junit-jupiter.xml');
+            const junitPath = path.join('build', 'test-results', 'test', 'TEST-PetriNetTest.xml');
+            const jacocoPath = path.join('build', 'reports', 'jacoco', 'test', 'jacocoTestReport.xml');
 
             let totalTests = 0, failures = 0, errors = 0, skipped = 0, successful = 0;
+            let totalLines = 0, coveredLines = 0, missedLines = 0;
+            let lineCoveragePercentage = "N/A";
 
             if (fs.existsSync(junitPath)) {
               const junitXml = fs.readFileSync(junitPath, 'utf-8');
@@ -74,6 +77,28 @@ jobs:
               });
             }
 
+            if (fs.existsSync(jacocoPath)) {
+              const jacocoXml = fs.readFileSync(jacocoPath, 'utf-8');
+              const parser = new xml2js.Parser();
+
+              parser.parseString(jacocoXml, (err, result) => {
+                if (err) {
+                  throw new Error(`Failed to parse JaCoCo report: ${err.message}`);
+                }
+
+                const counters = result.report.counter.filter(c => c.$.type === 'LINE');
+                counters.forEach(counter => {
+                  missedLines += parseInt(counter.$.missed);
+                  coveredLines += parseInt(counter.$.covered);
+                });
+
+                totalLines = missedLines + coveredLines;
+                lineCoveragePercentage = totalLines > 0
+                  ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
+                  : '0.00%';
+              });
+            }
+
             const summary = `
             # Test and Coverage Summary
             
@@ -85,16 +110,14 @@ jobs:
             - **Skipped:** ${skipped}
             
             ## Code Coverage
-            - **Line Coverage:** Coverage is available in the JaCoCo report.
+            - **Line Coverage:** ${lineCoveragePercentage}
+            - **Total Lines:** ${totalLines}
+            - **Covered Lines:** ${coveredLines}
+            - **Missed Lines:** ${missedLines}
             `;
             
             console.log(summary);
             await core.summary.addRaw(summary).write();
-
-
-
-
-
 
 #name: Java CI
 #
