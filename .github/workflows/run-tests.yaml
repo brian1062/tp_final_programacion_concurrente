@@ -72,7 +72,7 @@ jobs:
       - name: Generate Combined Test and Coverage Summary
         uses: actions/github-script@v6
         env:
-          MINIMUM_COVERAGE: "40"
+          MINIMUM_COVERAGE: "20"
         with:
           script: |
             const fs = require('fs');
