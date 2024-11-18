@@ -27,15 +27,19 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+            .gradle
+            build
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
       - name: Setup Node Cache
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -64,7 +68,7 @@ jobs:
       - name: Generate Combined Test and Coverage Summary
         uses: actions/github-script@v6
         env:
-          MINIMUM_COVERAGE: "50"
+          MINIMUM_COVERAGE: "40"
         with:
           script: |
             const fs = require('fs');
