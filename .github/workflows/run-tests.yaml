@@ -50,7 +50,7 @@ jobs:
             let lineCoverage = 'N/A', branchCoverage = 'N/A';
 
             // Parse JUnit Test Results
-            const junitPath = path.join('build', 'test-results', 'test', 'TEST-junit-jupiter.xml');
+            const junitPath = path.join('build', 'test-results', 'test', 'TEST-PetriNetTest.xml');
             if (fs.existsSync(junitPath)) {
               const junitXml = fs.readFileSync(junitPath, 'utf-8');
               const parser = new xml2js.Parser();
@@ -147,8 +147,6 @@ jobs:
 #          fail-on-coverage-decrease: true
 #          fail-if-branches-less-than: "%70"
 #          fail-if-coverage-less-than: "40%"
-#          generate-workflow-summary: true
-#          workflow-summary-heading: Test Coverage Summary
 #
 #      - name: Publish JUnit test results
 #        uses: dorny/test-reporter@v1
