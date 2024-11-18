@@ -9,7 +9,28 @@ on:
   workflow_dispatch:
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Agregamos el paso para verificar el formato
+      - name: Check Java Format
+        uses: axel-op/googlejavaformat-action@v3
+        with:
+          args: "--replace"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-commit: false
+
   test:
+    needs: format  # Hacemos que test dependa de format
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,12 +65,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') || hashFiles('package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Formatting
-        uses: axel-op/googlejavaformat-action@v3
-        with:
-          args: "--skip-sorting-imports --replace"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build with Gradle
         run: ./gradlew build
