@@ -2,13 +2,13 @@ name: Java CI
 
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -29,23 +29,125 @@ jobs:
       - name: Generate JaCoCo coverage report
         run: ./gradlew jacocoTestReport
 
-      - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
+      - name: Generate Combined Test and Coverage Summary
+        uses: actions/github-script@v6
         with:
-          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
-          generate-summary: true
-          fail-on-coverage-decrease: true
-          fail-if-branches-less-than: "%70"
-          fail-if-coverage-less-than: "40%"
-          generate-workflow-summary: true
-          workflow-summary-heading: Test Coverage Summary
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const xml2js = require('xml2js');
 
-      - name: Publish JUnit test results
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Tests
-          path: build/test-results/**/*.xml
-          reporter: java-junit
+            // Initialize summary values
+            let totalTests = 0, failures = 0, errors = 0;
+            let lineCoverage = 'N/A', branchCoverage = 'N/A';
+
+            // Parse JUnit Test Results
+            const junitPath = path.join('build', 'test-results', 'test', 'TEST-junit-jupiter.xml');
+            if (fs.existsSync(junitPath)) {
+              const junitXml = fs.readFileSync(junitPath, 'utf-8');
+              const parser = new xml2js.Parser();
+              const result = await parser.parseStringPromise(junitXml);
+
+              const testsuite = result.testsuite.$;
+              totalTests = parseInt(testsuite.tests);
+              failures = parseInt(testsuite.failures);
+              errors = parseInt(testsuite.errors);
+            }
+
+            // Parse JaCoCo Coverage Report
+            const jacocoPath = path.join('build', 'reports', 'jacoco', 'test', 'jacocoTestReport.xml');
+            if (fs.existsSync(jacocoPath)) {
+              const jacocoXml = fs.readFileSync(jacocoPath, 'utf-8');
+              const parser = new xml2js.Parser();
+              const result = await parser.parseStringPromise(jacocoXml);
+
+              const counters = result.report.counter;
+              const lineCounter = counters.find(c => c.$.type === 'LINE');
+              const branchCounter = counters.find(c => c.$.type === 'BRANCH');
+
+              const coveredLines = parseInt(lineCounter.$.covered);
+              const missedLines = parseInt(lineCounter.$.missed);
+              const totalLines = coveredLines + missedLines;
+
+              const coveredBranches = parseInt(branchCounter.$.covered);
+              const missedBranches = parseInt(branchCounter.$.missed);
+              const totalBranches = coveredBranches + missedBranches;
+
+              lineCoverage = totalLines > 0 ? ((coveredLines / totalLines) * 100).toFixed(2) + '%' : '0.00%';
+              branchCoverage = totalBranches > 0 ? ((coveredBranches / totalBranches) * 100).toFixed(2) + '%' : '0.00%';
+            }
+
+            // Generate summary
+            const summary = `
+            # Test and Coverage Summary
+            
+            ## Test Results
+            - **Total Tests:** ${totalTests}
+            - **Failures:** ${failures}
+            - **Errors:** ${errors}
+            
+            ## Code Coverage
+            - **Line Coverage:** ${lineCoverage}
+            - **Branch Coverage:** ${branchCoverage}
+            `;
+            
+            // Log and write the summary
+            console.log(summary);
+            await core.summary.addRaw(summary).write();
+
+
+
+
+
+
+#name: Java CI
+#
+#on:
+#  push:
+#  #pull_request:
+#  workflow_dispatch:
+#
+#jobs:
+#  test:
+#    runs-on: ubuntu-latest
+#    permissions: write-all
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 21
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '21'
+#          distribution: 'temurin'
+#
+#      - name: Build with Gradle
+#        run: ./gradlew build
+#
+#      - name: Run tests with Gradle
+#        run: ./gradlew test
+#
+#      - name: Generate JaCoCo coverage report
+#        run: ./gradlew jacocoTestReport
+#
+#      - name: Generate JaCoCo Badge
+#        uses: cicirello/jacoco-badge-generator@v2
+#        with:
+#          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
+#          generate-summary: true
+#          fail-on-coverage-decrease: true
+#          fail-if-branches-less-than: "%70"
+#          fail-if-coverage-less-than: "40%"
+#          generate-workflow-summary: true
+#          workflow-summary-heading: Test Coverage Summary
+#
+#      - name: Publish JUnit test results
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: JUnit Tests
+#          path: build/test-results/**/*.xml
+#          reporter: java-junit
 
 
 
