@@ -45,6 +45,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Formatting
+        uses: axel-op/googlejavaformat-action@v3
+        with:
+          args: "--set-exit-if-changed"
+
       - name: Build with Gradle
         run: ./gradlew build
 

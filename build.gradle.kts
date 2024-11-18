@@ -2,6 +2,7 @@ plugins {
     java
     jacoco
     id("org.jetbrains.dokka") version "1.9.10"
+    //id ("com.github.sherter.google-java-format") version "0.9"
 }
 
 group = "org.petrinet"
@@ -20,6 +21,8 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.8.0")
 
     testImplementation("org.assertj:assertj-core:3.24.2")
+
+    //implementation('com.google.googlejavaformat:google-java-format:$googleJavaFormatVersion')
 }
 
 tasks.jar {
