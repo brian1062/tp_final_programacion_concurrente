@@ -29,6 +29,14 @@ jobs:
       - name: Generate JaCoCo coverage report
         run: ./gradlew jacocoTestReport
 
+      - name: Generate JaCoCo Badge
+        uses: cicirello/jacoco-badge-generator@v3
+        with:
+          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
+          output-directory: build/reports/jacoco/test
+          fail-on-coverage-decrease: true
+          generate-summary: true
+
       - name: Publish JUnit test results
         uses: dorny/test-reporter@v1
         with:
@@ -36,19 +44,6 @@ jobs:
           path: build/test-results/**/*.xml
           reporter: java-junit
 
-      - name: Upload JaCoCo Coverage Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: jacoco-coverage-report
-          path: build/reports/jacoco/test/html
-
-      - name: Check Coverage Threshold
-        run: |
-          COVERAGE=$(grep -oP '(?<=<counter type="LINE" missed="\d+" covered=")\d+' build/reports/jacoco/test/jacocoTestReport.xml | awk '{s+=$1} END {print s}')
-          echo "Coverage: $COVERAGE%"
-          if [ "$COVERAGE" -lt "50" ]; then
-            echo "Coverage below threshold!" && exit 1
-          fi
 
 
 
