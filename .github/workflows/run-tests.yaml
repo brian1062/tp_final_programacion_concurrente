@@ -46,6 +46,8 @@ jobs:
 
       - name: Generate Combined Test and Coverage Summary
         uses: actions/github-script@v6
+        env:
+          MINIMUM_COVERAGE: "50"
         with:
           script: |
             const fs = require('fs');
@@ -97,6 +99,16 @@ jobs:
                   ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
                   : '0.00%';
               });
+            }
+
+            # Check for valid coverage percentage
+            auxLineCoveragePercentage = parseFloat(lineCoveragePercentage.replace('%', ''));
+            if (auxLineCoveragePercentage < 0 || auxLineCoveragePercentage > 100) {
+              core.setFailed(`Invalid line coverage percentage: ${lineCoveragePercentage}`);
+            }
+
+            if (auxLineCoveragePercentage < parseFloat(process.env.MINIMUM_COVERAGE)) {
+              core.setFailed(`Line coverage is below the minimum threshold of ${process.env.MINIMUM_COVERAGE}%: ${lineCoveragePercentage}`);
             }
 
             const summary = `
