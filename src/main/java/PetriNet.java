@@ -114,7 +114,7 @@ public class PetriNet {
     // Clear the enabledTransitions list to remove any previously stored transitions
     enabledTransitions.clear();
 
-    // Iterate over all transitions in the incidence matrix using Streams
+    // Iterate over all transitions in the incidence matrix
     IntStream.range(0, incidenceMatrixIn[0].length)
         .filter(
             transitionIndex ->
