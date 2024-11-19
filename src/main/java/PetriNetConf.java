@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PetriNetConf {
-  private static final int MAX_TIME=600000000;
+  private static final int MAX_TIME = 600000000;
   private static final int[] INITIAL_MARKING = {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
 
   private static final int[][] INCIDENCE_MATRIX_OUT = { // I+
@@ -40,28 +40,28 @@ public class PetriNetConf {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1} // P14
   };
 
-  private static final int[][] TIME_TRANSITION_MATRIX={
-        {0,MAX_TIME},//T0 
-        {30,MAX_TIME},//T1
-        {0,MAX_TIME},//T2
-        {0,MAX_TIME},//T3
-        {30,MAX_TIME},//T4
-        {30,MAX_TIME},//T5
-        {0,MAX_TIME},//T6
-        {0,MAX_TIME},//T7
-        {30,MAX_TIME},//T8
-        {30,MAX_TIME},//T9
-        {30,MAX_TIME},//T10
-        {0,MAX_TIME},//T11
+  private static final int[][] TIME_TRANSITION_MATRIX = {
+    {0, MAX_TIME}, // T0
+    {30, MAX_TIME}, // T1
+    {0, MAX_TIME}, // T2
+    {0, MAX_TIME}, // T3
+    {30, MAX_TIME}, // T4
+    {30, MAX_TIME}, // T5
+    {0, MAX_TIME}, // T6
+    {0, MAX_TIME}, // T7
+    {30, MAX_TIME}, // T8
+    {30, MAX_TIME}, // T9
+    {30, MAX_TIME}, // T10
+    {0, MAX_TIME}, // T11
   };
 
-  private static final int[][] TRANSITIONS_THREADS={
-    {0,1}, //Thread 0
-    {2,5}, //Thread 1
-    {3,4}, //Thread 2
-    {6,9,10},  //Thread 3
-    {7,8}, //Thread 4
-    {11} //Thread 5
+  private static final int[][] TRANSITIONS_THREADS = {
+    {0, 1}, // Thread 0
+    {2, 5}, // Thread 1
+    {3, 4}, // Thread 2
+    {6, 9, 10}, // Thread 3
+    {7, 8}, // Thread 4
+    {11} // Thread 5
   };
 
   private final List<Place> places = new ArrayList<>();
@@ -74,7 +74,8 @@ public class PetriNetConf {
     }
     // Initialize transitions list
     for (int i = 0; i < INCIDENCE_MATRIX_OUT[0].length; i++) {
-      transitions.add(new Transition("T" + i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]));
+      transitions.add(
+          new Transition("T" + i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]));
     }
   }
 

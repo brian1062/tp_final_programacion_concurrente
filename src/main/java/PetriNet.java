@@ -7,7 +7,7 @@ public class PetriNet {
   private List<Transition> transitions;
   private List<Place> places;
   private List<Transition> enabledTransitions = new ArrayList<>();
-  private int countInvariant=0;
+  private int countInvariant = 0;
   private int[][] incidenceMatrixOut;
   private int[][] incidenceMatrixIn;
   private int[] marking;

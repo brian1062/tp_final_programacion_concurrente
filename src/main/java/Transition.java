@@ -4,11 +4,11 @@ public class Transition {
   private int maxTime;
   private boolean isImmediate;
 
-  public Transition(String name,int delayTime,int maxTime) {
+  public Transition(String name, int delayTime, int maxTime) {
     this.name = name;
-    this.delayTime = delayTime; 
+    this.delayTime = delayTime;
     this.maxTime = maxTime;
-    this.isImmediate = delayTime==0;
+    this.isImmediate = delayTime == 0;
   }
 
   public String getName() {
@@ -19,15 +19,15 @@ public class Transition {
     return delayTime;
   }
 
-  //todo: remove unused
-  public void setTime(int delayTime) { 
+  // todo: remove unused
+  public void setTime(int delayTime) {
     if (delayTime < 0) {
       throw new IllegalArgumentException("Time cannot be negative");
     }
     this.delayTime = delayTime;
   }
 
-  public boolean isImmediate(){
+  public boolean isImmediate() {
     return isImmediate;
   }
 }
