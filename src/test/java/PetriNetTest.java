@@ -1,6 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +27,7 @@ public class PetriNetTest {
 
   @Test
   public void testEnabledTransitions() {
-    Transition expectedTransition = new Transition("T0");
+    Transition expectedTransition = new Transition("T0",0,6000);
     assertEquals(
         expectedTransition.getName(), petriNet.getEnabledTransitions().getFirst().getName());
   }

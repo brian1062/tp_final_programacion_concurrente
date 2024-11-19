@@ -7,10 +7,10 @@ public class PetriNet {
   private List<Transition> transitions;
   private List<Place> places;
   private List<Transition> enabledTransitions = new ArrayList<>();
+  private int countInvariant=0;
   private int[][] incidenceMatrixOut;
   private int[][] incidenceMatrixIn;
   private int[] marking;
-  // private int[]               initialMarking      ; will be needed to check transition invariants
   private final int placesLength;
 
   // PolicyFactory policyFactory = new PolicyFactory(new PolicyBalancedType());
@@ -36,7 +36,6 @@ public class PetriNet {
     this.incidenceMatrixOut = incidenceMatrixOut;
     this.incidenceMatrixIn = incidenceMatrixIn;
     this.marking = marking;
-    // this.initialMarking     = marking.clone()   ;
     this.placesLength = places.size();
     updateEnabledTransitions(); // Initialize the enabled transitions
   }
@@ -79,24 +78,6 @@ public class PetriNet {
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();
   }
-
-  /**
-   * Checks if a transition is enabled in the Petri net by checking if all input places have enough
-   * tokens.
-   *
-   * @param transitionIndex The index of the transition to check in the input incidence matrix
-   * @return true if the transition is enabled, false otherwise
-   */
-  // public boolean isTransitionEnabled(int transitionIndex) {
-  //  for (int placeIndex = 0; placeIndex < places.size(); placeIndex++) {
-  //    // Verifies that the marking in the place is at least equal to the value in the input
-  //    // incidence matrix
-  //    if (marking[placeIndex] < incidenceMatrixIn[placeIndex][transitionIndex]) {
-  //      return false;
-  //    }
-  //  }
-  //  return true;
-  // } // TODO: borrar. No es necesario, se puede utilizar la lista de enabledTransitions
 
   /** Prints the current marking of the Petri net. */
   public void printMarking() {
