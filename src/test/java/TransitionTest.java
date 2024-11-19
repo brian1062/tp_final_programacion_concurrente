@@ -7,7 +7,7 @@ public class TransitionTest {
 
   @BeforeEach
   public void setUp() {
-    transition = new Transition("T0",10,6000);
+    transition = new Transition("T0", 10, 6000);
   }
 
   @Test
@@ -17,7 +17,7 @@ public class TransitionTest {
 
   @Test
   public void testGetTime() {
-    assertEquals(0, transition.getTime());
+    assertEquals(10, transition.getTime());
   }
 
   @Test
