@@ -21,7 +21,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # Agregamos el paso para verificar el formato
       - name: Check Java Format
         uses: axel-op/googlejavaformat-action@v3
         with:
@@ -30,7 +29,7 @@ jobs:
           skip-commit: false
 
   test:
-    needs: format  # Hacemos que test dependa de format
+    needs: format
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,7 +80,7 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies
-        run: npm install xml2js
+        run: npm install xml2js glob
 
       - name: Publish JUnit test results
         uses: dorny/test-reporter@v1
@@ -99,55 +98,65 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const xml2js = require('xml2js');
+            const glob = require('glob');
 
-            const junitPath = path.join('build', 'test-results', 'test', 'TEST-PetriNetTest.xml');
-            const jacocoPath = path.join('build', 'reports', 'jacoco', 'test', 'jacocoTestReport.xml');
-
+            // Variables to store test results
             let totalTests = 0, failures = 0, errors = 0, skipped = 0, successful = 0;
             let totalLines = 0, coveredLines = 0, missedLines = 0;
             let lineCoveragePercentage = "N/A";
 
-            if (fs.existsSync(junitPath)) {
-              const junitXml = fs.readFileSync(junitPath, 'utf-8');
+            // Function to process test files
+            async function processTestFiles() {
+              const testFiles = glob.sync(path.join('build', 'test-results', 'test', '*.xml'));
               const parser = new xml2js.Parser();
 
-              parser.parseString(junitXml, (err, result) => {
-                if (err) {
-                  throw new Error(`Failed to parse JUnit report: ${err.message}`);
+              for (const file of testFiles) {
+                const xmlContent = fs.readFileSync(file, 'utf-8');
+                try {
+                  const result = await parser.parseStringPromise(xmlContent);
+                  const testsuite = result.testsuite.$;
+                  
+                  totalTests += parseInt(testsuite.tests);
+                  failures += parseInt(testsuite.failures);
+                  errors += parseInt(testsuite.errors);
+                  skipped += parseInt(testsuite.skipped);
+                } catch (err) {
+                  console.error(`Error processing ${file}: ${err.message}`);
                 }
-
-                const testsuite = result.testsuite.$;
-                totalTests = parseInt(testsuite.tests);
-                failures = parseInt(testsuite.failures);
-                errors = parseInt(testsuite.errors);
-                skipped = parseInt(testsuite.skipped);
-                successful = totalTests - failures - errors - skipped;
-              });
+              }
+              successful = totalTests - failures - errors - skipped;
             }
 
-            if (fs.existsSync(jacocoPath)) {
-              const jacocoXml = fs.readFileSync(jacocoPath, 'utf-8');
-              const parser = new xml2js.Parser();
+            // Function for JaCoCo coverage report processing
+            async function processJacocoCoverage() {
+              const jacocoPath = path.join('build', 'reports', 'jacoco', 'test', 'jacocoTestReport.xml');
+              if (fs.existsSync(jacocoPath)) {
+                const jacocoXml = fs.readFileSync(jacocoPath, 'utf-8');
+                const parser = new xml2js.Parser();
 
-              parser.parseString(jacocoXml, (err, result) => {
-                if (err) {
-                  throw new Error(`Failed to parse JaCoCo report: ${err.message}`);
+                try {
+                  const result = await parser.parseStringPromise(jacocoXml);
+                  const counters = result.report.counter.filter(c => c.$.type === 'LINE');
+                  counters.forEach(counter => {
+                    missedLines += parseInt(counter.$.missed);
+                    coveredLines += parseInt(counter.$.covered);
+                  });
+
+                  totalLines = missedLines + coveredLines;
+                  lineCoveragePercentage = totalLines > 0
+                    ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
+                    : '0.00%';
+                } catch (err) {
+                  console.error(`Error processing JaCoCo report: ${err.message}`);
                 }
-
-                const counters = result.report.counter.filter(c => c.$.type === 'LINE');
-                counters.forEach(counter => {
-                  missedLines += parseInt(counter.$.missed);
-                  coveredLines += parseInt(counter.$.covered);
-                });
-
-                totalLines = missedLines + coveredLines;
-                lineCoveragePercentage = totalLines > 0
-                  ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
-                  : '0.00%';
-              });
+              }
             }
 
-            //  Check for valid coverage percentage
+            // Process test files and JaCoCo coverage
+            await processTestFiles();
+            await processJacocoCoverage();
+
+            // Check if line coverage is within the acceptable range
             let auxLineCoveragePercentage = parseFloat(lineCoveragePercentage.replace('%', ''));
             if (auxLineCoveragePercentage < 0 || auxLineCoveragePercentage > 100) {
               core.setFailed(`Invalid line coverage percentage: ${lineCoveragePercentage}`);
