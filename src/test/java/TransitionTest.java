@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -7,7 +8,7 @@ public class TransitionTest {
 
   @BeforeEach
   public void setUp() {
-    transition = new Transition("T0",10,6000);
+    transition = new Transition("T0", 10, 6000);
   }
 
   @Test
