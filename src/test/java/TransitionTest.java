@@ -4,35 +4,35 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TransitionTest {
-    private Transition transition;
+  private Transition transition;
 
-    @BeforeEach
-    public void setUp() {
-        transition = new Transition("T0");
-    }
+  @BeforeEach
+  public void setUp() {
+    transition = new Transition("T0");
+  }
 
-    @Test
-    public void testGetName() {
-        assertEquals("T0", transition.getName());
-    }
+  @Test
+  public void testGetName() {
+    assertEquals("T0", transition.getName());
+  }
 
-    @Test
-    public void testGetTime() {
-        assertEquals(0, transition.getTime());
-    }
+  @Test
+  public void testGetTime() {
+    assertEquals(0, transition.getTime());
+  }
 
-    @Test
-    public void testSetTime() {
-        transition.setTime(30);
-        assertEquals(30, transition.getTime());
-    }
+  @Test
+  public void testSetTime() {
+    transition.setTime(30);
+    assertEquals(30, transition.getTime());
+  }
 
-    @Test
-    public void testSetTimeError() {
-        try {
-            transition.setTime(-1);
-        } catch (IllegalArgumentException e) {
-            assertEquals("Time cannot be negative", e.getMessage());
-        }
+  @Test
+  public void testSetTimeError() {
+    try {
+      transition.setTime(-1);
+    } catch (IllegalArgumentException e) {
+      assertEquals("Time cannot be negative", e.getMessage());
     }
+  }
 }

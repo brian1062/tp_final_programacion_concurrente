@@ -75,7 +75,7 @@ public class PetriNet {
    * @param transitionIndex The index of the transition to check in the input incidence matrix
    * @return true if the transition is enabled, false otherwise
    */
-  //public boolean isTransitionEnabled(int transitionIndex) {
+  // public boolean isTransitionEnabled(int transitionIndex) {
   //  for (int placeIndex = 0; placeIndex < places.size(); placeIndex++) {
   //    // Verifies that the marking in the place is at least equal to the value in the input
   //    // incidence matrix
@@ -84,7 +84,7 @@ public class PetriNet {
   //    }
   //  }
   //  return true;
-  //} // TODO: borrar. No es necesario, se puede utilizar la lista de enabledTransitions
+  // } // TODO: borrar. No es necesario, se puede utilizar la lista de enabledTransitions
 
   /** Prints the current marking of the Petri net. */
   public void printMarking() {
