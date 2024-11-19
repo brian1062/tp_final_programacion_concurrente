@@ -4,6 +4,7 @@ public class Transition {
 
   public Transition(String name) {
     this.name = name;
+    time = 0; // Default time is 0
   }
 
   public String getName() {
