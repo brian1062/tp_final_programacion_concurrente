@@ -98,7 +98,6 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const xml2js = require('xml2js');
-            const glob = require('glob');
 
             // Variables to store test results
             let totalTests = 0, failures = 0, errors = 0, skipped = 0, successful = 0;
@@ -107,19 +106,25 @@ jobs:
 
             // Function to process test files
             async function processTestFiles() {
-              const testFiles = glob.sync(path.join('build', 'test-results', 'test', '*.xml'));
+              const testDir = path.join('build', 'test-results', 'test');
+              const files = fs.readdirSync(testDir)
+                             .filter(file => file.endsWith('.xml'))
+                             .map(file => path.join(testDir, file));
+              
               const parser = new xml2js.Parser();
 
-              for (const file of testFiles) {
+              for (const file of files) {
                 const xmlContent = fs.readFileSync(file, 'utf-8');
                 try {
                   const result = await parser.parseStringPromise(xmlContent);
                   const testsuite = result.testsuite.$;
                   
-                  totalTests += parseInt(testsuite.tests);
-                  failures += parseInt(testsuite.failures);
-                  errors += parseInt(testsuite.errors);
-                  skipped += parseInt(testsuite.skipped);
+                  totalTests += parseInt(testsuite.tests || 0);
+                  failures += parseInt(testsuite.failures || 0);
+                  errors += parseInt(testsuite.errors || 0);
+                  skipped += parseInt(testsuite.skipped || 0);
+                  
+                  console.log(`Processed ${file}: ${testsuite.tests} tests`);
                 } catch (err) {
                   console.error(`Error processing ${file}: ${err.message}`);
                 }
@@ -146,6 +151,8 @@ jobs:
                   lineCoveragePercentage = totalLines > 0
                     ? ((coveredLines / totalLines) * 100).toFixed(2) + '%'
                     : '0.00%';
+                  
+                  console.log(`Processed JaCoCo report: ${lineCoveragePercentage} coverage`);
                 } catch (err) {
                   console.error(`Error processing JaCoCo report: ${err.message}`);
                 }
@@ -156,7 +163,7 @@ jobs:
             await processTestFiles();
             await processJacocoCoverage();
 
-            // Check if line coverage is within the acceptable range
+            // Check if line coverage is within the expected range
             let auxLineCoveragePercentage = parseFloat(lineCoveragePercentage.replace('%', ''));
             if (auxLineCoveragePercentage < 0 || auxLineCoveragePercentage > 100) {
               core.setFailed(`Invalid line coverage percentage: ${lineCoveragePercentage}`);
