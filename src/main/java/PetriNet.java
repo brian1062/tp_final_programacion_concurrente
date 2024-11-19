@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PetriNet {
   private List<Transition> transitions;
@@ -53,16 +55,26 @@ public class PetriNet {
     }
 
     // Iterate over all places in the Petri net
-    for (int placeIndex = 0; placeIndex < places.size(); placeIndex++) {
-      // If there is an input arc from the place to the transition
-      if (incidenceMatrixIn[placeIndex][transitionIndex] == 1) {
-        marking[placeIndex]--; // Remove tokens from the input places
-      }
-      // If there is an output arc from the transition to the place
-      if (incidenceMatrixOut[placeIndex][transitionIndex] == 1) {
-        marking[placeIndex]++; // Add tokens to the output places
-      }
-    }
+    IntStream.range(0, places.size())
+        .forEach(
+            placeIndex -> {
+              // If there is an input arc from the place to the transition
+              if (incidenceMatrixIn[placeIndex][transitionIndex] > 0) {
+                // marking[placeIndex]--; // Remove tokens from the input places
+                marking[placeIndex] =
+                    marking[placeIndex]
+                        - incidenceMatrixIn[placeIndex][
+                            transitionIndex]; // Remove tokens from the input places
+              }
+              // If there is an output arc from the transition to the place
+              if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
+                // marking[placeIndex]++; // Add tokens to the output places
+                marking[placeIndex] =
+                    marking[placeIndex]
+                        + incidenceMatrixOut[placeIndex][
+                            transitionIndex]; // Add tokens to the output places
+              }
+            });
 
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();
@@ -88,16 +100,12 @@ public class PetriNet {
 
   /** Prints the current marking of the Petri net. */
   public void printMarking() {
-    // Initialize an empty string to build the marking representation
-    String markingString = "";
+    String markingString =
+        IntStream.range(0, marking.length)
+            .mapToObj(placeIndex -> String.valueOf(marking[placeIndex]))
+            .collect(Collectors.joining(" "));
 
-    // Iterate over all places in the marking array
-    for (int place = 0; place < marking.length; place++) {
-      // Append the number of tokens in the current place to the marking string
-      markingString += marking[place] + " ";
-    }
-
-    // Print the complete marking string to the console
+    // Print marking string to the console
     System.out.println(markingString);
   }
 
@@ -107,34 +115,21 @@ public class PetriNet {
     enabledTransitions.clear();
 
     // Iterate over all transitions in the incidence matrix
-    for (int transitionIndex = 0;
-        transitionIndex < incidenceMatrixIn[0].length;
-        transitionIndex++) {
-      boolean enabled = true; // Assume the transition is enabled initially
-
-      // Check each place to see if the transition can be enabled
-      for (int placeIndex = 0; placeIndex < placesLength; placeIndex++) {
-        // If the place has fewer tokens than required to fire the transition
-        if (marking[placeIndex] < incidenceMatrixIn[placeIndex][transitionIndex]) {
-          enabled = false; // Transition is not enabled
-          break; // Exit the loop early since the transition cannot be enabled
-        }
-      }
-
-      // If the transition is enabled, add it to the enabledTransitions list
-      if (enabled) {
-        enabledTransitions.add(transitions.get(transitionIndex));
-      }
-    }
+    IntStream.range(0, incidenceMatrixIn[0].length)
+        .filter(
+            transitionIndex ->
+                IntStream.range(0, placesLength)
+                    .allMatch(
+                        placeIndex ->
+                            marking[placeIndex] >= incidenceMatrixIn[placeIndex][transitionIndex]))
+        .mapToObj(transitions::get)
+        .forEach(enabledTransitions::add);
   }
 
   /** Prints the names of the currently enabled transitions in the Petri net. */
   public void printEnabledTransitions() {
-    // Iterate over all transitions in the enabledTransitions list
-    for (Transition t : enabledTransitions) {
-      // Print the name of the current transition to the console
-      System.out.println(t.getName());
-    }
+    // Iterate over the enabledTransitions list and print each transition's name
+    enabledTransitions.stream().map(Transition::getName).forEach(System.out::println);
   }
 
   // Getters
