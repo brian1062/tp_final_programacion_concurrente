@@ -45,9 +45,10 @@ public class PetriNet {
    * @param transitionIndex The index of the transition to fire in the input incidence matriz
    */
   public void fireTransition(int transitionIndex) {
-    // Check if the transition is enabled
-    if (!isTransitionEnabled(transitionIndex)) {
-      System.out.println("Transition is not enabled");
+    Transition transitionFromIndex = transitions.get(transitionIndex);
+
+    if (!enabledTransitions.contains(transitionFromIndex)) {
+      System.out.printf("Transition %s is not enabled\n", transitionFromIndex.getName());
       return; // If not enabled, print a message and exit the function
     }
 
@@ -74,16 +75,16 @@ public class PetriNet {
    * @param transitionIndex The index of the transition to check in the input incidence matrix
    * @return true if the transition is enabled, false otherwise
    */
-  public boolean isTransitionEnabled(int transitionIndex) {
-    for (int placeIndex = 0; placeIndex < places.size(); placeIndex++) {
-      // Verifies that the marking in the place is at least equal to the value in the input
-      // incidence matrix
-      if (marking[placeIndex] < incidenceMatrixIn[placeIndex][transitionIndex]) {
-        return false;
-      }
-    }
-    return true;
-  }
+  //public boolean isTransitionEnabled(int transitionIndex) {
+  //  for (int placeIndex = 0; placeIndex < places.size(); placeIndex++) {
+  //    // Verifies that the marking in the place is at least equal to the value in the input
+  //    // incidence matrix
+  //    if (marking[placeIndex] < incidenceMatrixIn[placeIndex][transitionIndex]) {
+  //      return false;
+  //    }
+  //  }
+  //  return true;
+  //} // TODO: borrar. No es necesario, se puede utilizar la lista de enabledTransitions
 
   /** Prints the current marking of the Petri net. */
   public void printMarking() {
