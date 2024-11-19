@@ -13,6 +13,8 @@ public class Place {
     return tokens;
   }
 
+  public String getName() { return name; }
+
   // Setters
   public void setTokens(int tokens) {
     if (tokens < 0) {
