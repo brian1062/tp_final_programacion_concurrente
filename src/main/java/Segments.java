@@ -17,7 +17,6 @@ public class Segments implements Runnable {
     while (isRunning.get()) {
       for (Transition t : sequence) {
         monitor.fireTransition(t.getNumber());
-        
       }
     }
   }

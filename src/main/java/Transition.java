@@ -6,14 +6,15 @@ public class Transition {
   private boolean isImmediate;
 
   public Transition(int number, int delayTime, int maxTime) {
-    this.number=number;
-    this.name = "T"+number;
+    this.number = number;
+    this.name = "T" + number;
 
     this.delayTime = delayTime;
     this.maxTime = maxTime;
     this.isImmediate = delayTime == 0;
   }
-  public int getNumber(){
+
+  public int getNumber() {
     return number;
   }
 

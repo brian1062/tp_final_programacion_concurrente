@@ -1,4 +1,3 @@
-
 public class Main {
   // static boolean condicion = true;
 
@@ -15,16 +14,14 @@ public class Main {
             rdPConf.getInitialMarking(),
             186);
 
-    //Initialize threads
+    // Initialize threads
     Thread[] threads = new Thread[rdPConf.getNumbersOfSequence()];
-    Monitor monitor =  Monitor.getMonitor(petriNet);
-    for (int i=0; i<threads.length;i++){
-      threads[i] = new Thread(new Segments(rdPConf.getSequence(i),monitor));
-    } 
-    for (int i=0; i<threads.length;i++){
+    Monitor monitor = Monitor.getMonitor(petriNet);
+    for (int i = 0; i < threads.length; i++) {
+      threads[i] = new Thread(new Segments(rdPConf.getSequence(i), monitor));
+    }
+    for (int i = 0; i < threads.length; i++) {
       threads[i].start();
     }
-
-  
   }
 }

@@ -40,7 +40,7 @@ public class PetriNet {
     this.incidenceMatrixIn = incidenceMatrixIn;
     this.marking = marking;
     this.placesLength = places.size();
-    this.maxInvariant=maxInvariant;
+    this.maxInvariant = maxInvariant;
     updateEnabledTransitions(); // Initialize the enabled transitions
   }
 
@@ -78,7 +78,7 @@ public class PetriNet {
                             transitionIndex]; // Add tokens to the output places
               }
             });
-      //TODO:Descomentar y agregar logica
+    // TODO:Descomentar y agregar logica
     // if(transitionIndex==11){
     //   countInvariant++;
     //   if(countInvariant>=maxInvariant){
@@ -99,7 +99,7 @@ public class PetriNet {
             .collect(Collectors.joining(" "));
 
     // Print marking string to the console
-    //System.out.println(markingString);
+    // System.out.println(markingString);
     return markingString;
   }
 
@@ -134,8 +134,9 @@ public class PetriNet {
   public List<Transition> getEnabledTransitions() {
     return enabledTransitions;
   }
-  public boolean invariantArchived(){
-    return invariantArchived;//todo: protect this becauso many threads can access auque es para lectura
+
+  public boolean invariantArchived() {
+    return invariantArchived; // todo: protect this becauso many threads can access auque es para
+                              // lectura
   }
- 
 }

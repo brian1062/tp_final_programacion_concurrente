@@ -100,18 +100,19 @@ public class PetriNetConf {
     return transitions;
   }
 
-  public List<Transition> getSequence(int index){
+  public List<Transition> getSequence(int index) {
     List<Transition> sequence = new ArrayList<>();
     int[] transitionIndex = TRANSITIONS_THREADS[index];
-    for (int tIndex: transitionIndex){
-      if(tIndex<0 || tIndex >= transitions.size()){
+    for (int tIndex : transitionIndex) {
+      if (tIndex < 0 || tIndex >= transitions.size()) {
         throw new IllegalArgumentException("Index invalid");
       }
       sequence.add(transitions.get(tIndex));
     }
     return sequence;
   }
-  public int getNumbersOfSequence(){
+
+  public int getNumbersOfSequence() {
     return TRANSITIONS_THREADS.length;
   }
 }
