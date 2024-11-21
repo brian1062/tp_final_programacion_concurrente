@@ -13,12 +13,12 @@ class Monitor implements MonitorInterface {
   }
 
   @Override
-  public boolean fireTransition(int transitionIndex) {
+  public boolean fireTransition(String transitionIndex) {
 
     return false;
   }
 }
 
 interface MonitorInterface {
-  boolean fireTransition(int transition);
+  boolean fireTransition(String transition);
 }
