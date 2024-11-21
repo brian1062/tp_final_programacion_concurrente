@@ -2,11 +2,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Segments implements Runnable {
-  private final List<Transition> transitions;
+  private final List<Transition> sequence;
   private final Monitor monitor;
 
-  public Segments(List<Transition> transitions, Monitor monitor) {
-    this.transitions = transitions;
+  public Segments(List<Transition> sequence, Monitor monitor) {
+    this.sequence = sequence;
     this.monitor = monitor;
   }
 
@@ -15,8 +15,9 @@ public class Segments implements Runnable {
     AtomicBoolean isRunning = new AtomicBoolean(true);
 
     while (isRunning.get()) {
-      for (Transition t : transitions) {
-        monitor.fireTransition(t.getName());
+      for (Transition t : sequence) {
+        monitor.fireTransition(t.getNumber());
+        
       }
     }
   }

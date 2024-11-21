@@ -8,7 +8,7 @@ public class TransitionTest {
 
   @BeforeEach
   public void setUp() {
-    transition = new Transition("T0", 10, 6000);
+    transition = new Transition(0, 10, 6000);
   }
 
   @Test

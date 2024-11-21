@@ -1,3 +1,4 @@
+
 public class Main {
   // static boolean condicion = true;
 
@@ -11,29 +12,19 @@ public class Main {
             rdPConf.getPlaces(),
             rdPConf.getIncidenceMatrixOut(),
             rdPConf.getIncidenceMatrixIn(),
-            rdPConf.getInitialMarking());
-    System.out.println("Initial marking:");
-    petriNet.printMarking();
-    petriNet.printEnabledTransitions();
+            rdPConf.getInitialMarking(),
+            186);
 
-    petriNet.fireTransition(0);
-    System.out.println("After firing transition 0:");
-    petriNet.printMarking();
-    petriNet.printEnabledTransitions();
+    //Initialize threads
+    Thread[] threads = new Thread[rdPConf.getNumbersOfSequence()];
+    Monitor monitor =  Monitor.getMonitor(petriNet);
+    for (int i=0; i<threads.length;i++){
+      threads[i] = new Thread(new Segments(rdPConf.getSequence(i),monitor));
+    } 
+    for (int i=0; i<threads.length;i++){
+      threads[i].start();
+    }
 
-    petriNet.fireTransition(1);
-    System.out.println("After firing transition 1:");
-    petriNet.printMarking();
-    petriNet.printEnabledTransitions();
-
-    petriNet.fireTransition(3);
-    System.out.println("After firing transition 3:");
-    petriNet.printMarking();
-    petriNet.printEnabledTransitions();
-
-    petriNet.fireTransition(3);
-    System.out.println("After firing transition 3:");
-    petriNet.printMarking();
-    petriNet.printEnabledTransitions();
+  
   }
 }

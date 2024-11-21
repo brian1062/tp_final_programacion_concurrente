@@ -75,7 +75,7 @@ public class PetriNetConf {
     // Initialize transitions list
     for (int i = 0; i < INCIDENCE_MATRIX_OUT[0].length; i++) {
       transitions.add(
-          new Transition("T" + i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]));
+          new Transition(i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]));
     }
   }
 
@@ -98,5 +98,20 @@ public class PetriNetConf {
 
   public List<Transition> getTransitions() {
     return transitions;
+  }
+
+  public List<Transition> getSequence(int index){
+    List<Transition> sequence = new ArrayList<>();
+    int[] transitionIndex = TRANSITIONS_THREADS[index];
+    for (int tIndex: transitionIndex){
+      if(tIndex<0 || tIndex >= transitions.size()){
+        throw new IllegalArgumentException("Index invalid");
+      }
+      sequence.add(transitions.get(tIndex));
+    }
+    return sequence;
+  }
+  public int getNumbersOfSequence(){
+    return TRANSITIONS_THREADS.length;
   }
 }

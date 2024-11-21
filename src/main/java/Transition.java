@@ -1,14 +1,20 @@
 public class Transition {
   private String name;
+  private int number;
   private int delayTime;
   private int maxTime;
   private boolean isImmediate;
 
-  public Transition(String name, int delayTime, int maxTime) {
-    this.name = name;
+  public Transition(int number, int delayTime, int maxTime) {
+    this.number=number;
+    this.name = "T"+number;
+
     this.delayTime = delayTime;
     this.maxTime = maxTime;
     this.isImmediate = delayTime == 0;
+  }
+  public int getNumber(){
+    return number;
   }
 
   public String getName() {

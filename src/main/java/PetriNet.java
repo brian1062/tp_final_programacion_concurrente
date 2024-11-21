@@ -8,6 +8,8 @@ public class PetriNet {
   private List<Place> places;
   private List<Transition> enabledTransitions = new ArrayList<>();
   private int countInvariant = 0;
+  private boolean invariantArchived = false;
+  private final int maxInvariant;
   private int[][] incidenceMatrixOut;
   private int[][] incidenceMatrixIn;
   private int[] marking;
@@ -30,13 +32,15 @@ public class PetriNet {
       List<Place> places,
       int[][] incidenceMatrixOut,
       int[][] incidenceMatrixIn,
-      int[] marking) {
+      int[] marking,
+      int maxInvariant) {
     this.transitions = transitions;
     this.places = places;
     this.incidenceMatrixOut = incidenceMatrixOut;
     this.incidenceMatrixIn = incidenceMatrixIn;
     this.marking = marking;
     this.placesLength = places.size();
+    this.maxInvariant=maxInvariant;
     updateEnabledTransitions(); // Initialize the enabled transitions
   }
 
@@ -45,12 +49,12 @@ public class PetriNet {
    *
    * @param transitionIndex The index of the transition to fire in the input incidence matriz
    */
-  public void fireTransition(int transitionIndex) {
+  public boolean fireTransition(int transitionIndex) {
     Transition transitionFromIndex = transitions.get(transitionIndex);
 
     if (!enabledTransitions.contains(transitionFromIndex)) {
-      System.out.printf("Transition %s is not enabled\n", transitionFromIndex.getName());
-      return; // If not enabled, print a message and exit the function
+      // System.out.printf("Transition %s is not enabled\n", transitionFromIndex.getName());
+      return false; // If not enabled, print a message and exit the function
     }
 
     // Iterate over all places in the Petri net
@@ -74,20 +78,29 @@ public class PetriNet {
                             transitionIndex]; // Add tokens to the output places
               }
             });
+      //TODO:Descomentar y agregar logica
+    // if(transitionIndex==11){
+    //   countInvariant++;
+    //   if(countInvariant>=maxInvariant){
+    //     invariantArchived = true;
+    //   }
+    // }
 
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();
+    return true;
   }
 
   /** Prints the current marking of the Petri net. */
-  public void printMarking() {
+  public String printMarking() {
     String markingString =
         IntStream.range(0, marking.length)
             .mapToObj(placeIndex -> String.valueOf(marking[placeIndex]))
             .collect(Collectors.joining(" "));
 
     // Print marking string to the console
-    System.out.println(markingString);
+    //System.out.println(markingString);
+    return markingString;
   }
 
   /** Updates the list of enabled transitions in the Petri net. */
@@ -121,4 +134,8 @@ public class PetriNet {
   public List<Transition> getEnabledTransitions() {
     return enabledTransitions;
   }
+  public boolean invariantArchived(){
+    return invariantArchived;//todo: protect this becauso many threads can access auque es para lectura
+  }
+ 
 }
