@@ -32,7 +32,7 @@ class Monitor implements MonitorInterface {
     try {
       mutex.acquire();
     } catch (Exception e) {
-      //todo: add some exception
+      // todo: add some exception
     }
     succesFire = true;
     while (succesFire) {
@@ -40,15 +40,13 @@ class Monitor implements MonitorInterface {
       if (succesFire) {
         System.out.println(
             "Transition fire: " + transitionIndex + " Marcado: " + petriNet.printMarking());
-
-      } 
-
+      }
     }
     mutex.release();
     return false;
   }
 
-  public boolean petriNetIsShutdown(){
+  public boolean petriNetIsShutdown() {
     return petriNet.invariantArchived();
   }
 }

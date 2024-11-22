@@ -77,9 +77,9 @@ public class PetriNet {
                             transitionIndex]; // Add tokens to the output places
               }
             });
-    if(transitionIndex==11){
+    if (transitionIndex == 11) {
       countInvariant++;
-      if(countInvariant>=maxInvariant){
+      if (countInvariant >= maxInvariant) {
         invariantArchived = true;
       }
     }

@@ -28,7 +28,5 @@ public class Main {
     // Create and start threads
     Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getSequence(i), monitor)));
     Arrays.stream(threads).forEach(Thread::start);
-
-
   }
 }
