@@ -53,7 +53,6 @@ public class PetriNet {
     Transition transitionFromIndex = transitions.get(transitionIndex);
 
     if (!enabledTransitions.contains(transitionFromIndex)) {
-      // System.out.printf("Transition %s is not enabled\n", transitionFromIndex.getName());
       return false; // If not enabled, print a message and exit the function
     }
 
@@ -78,13 +77,12 @@ public class PetriNet {
                             transitionIndex]; // Add tokens to the output places
               }
             });
-    // TODO:Descomentar y agregar logica
-    // if(transitionIndex==11){
-    //   countInvariant++;
-    //   if(countInvariant>=maxInvariant){
-    //     invariantArchived = true;
-    //   }
-    // }
+    if(transitionIndex==11){
+      countInvariant++;
+      if(countInvariant>=maxInvariant){
+        invariantArchived = true;
+      }
+    }
 
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();

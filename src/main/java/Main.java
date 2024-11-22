@@ -29,12 +29,6 @@ public class Main {
     Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getSequence(i), monitor)));
     Arrays.stream(threads).forEach(Thread::start);
 
-    // for (int i = 0; i < threads.length; i++) {
-    //  threads[i] = new Thread(new Segments(rdPConf.getSequence(i), monitor));
-    // }
-    // for (int i = 0; i < threads.length; i++) {
-    //  threads[i].start();
-    // } //TODO: 2 lineas vs 6, pero el for es mas entendible
 
   }
 }
