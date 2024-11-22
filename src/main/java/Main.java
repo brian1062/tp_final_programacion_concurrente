@@ -9,18 +9,19 @@ public class Main {
     final int TARGET_INVARIANTS = 186; // Number of invariants to reach
 
     PetriNetConf rdPConf = new PetriNetConf(); // Load configuration
-    
+
     PetriNet petriNet =
-      new PetriNet(
-        rdPConf.getTransitions(),
-        rdPConf.getPlaces(),
-        rdPConf.getIncidenceMatrixOut(),
-        rdPConf.getIncidenceMatrixIn(),
-        rdPConf.getInitialMarking(),
-        TARGET_INVARIANTS);
-    
+        new PetriNet(
+            rdPConf.getTransitions(),
+            rdPConf.getPlaces(),
+            rdPConf.getIncidenceMatrixOut(),
+            rdPConf.getIncidenceMatrixIn(),
+            rdPConf.getInitialMarking(),
+            TARGET_INVARIANTS);
+
     // Initialize threads array
-    Thread[] threads = new Thread[rdPConf.getNumberOfSequences()]; // We'll have one thread per sequence
+    Thread[] threads =
+        new Thread[rdPConf.getNumberOfSequences()]; // We'll have one thread per sequence
 
     Monitor monitor = Monitor.getMonitor(petriNet);
 
@@ -28,12 +29,12 @@ public class Main {
     Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getSequence(i), monitor)));
     Arrays.stream(threads).forEach(Thread::start);
 
-    //for (int i = 0; i < threads.length; i++) {
+    // for (int i = 0; i < threads.length; i++) {
     //  threads[i] = new Thread(new Segments(rdPConf.getSequence(i), monitor));
-    //}
-    //for (int i = 0; i < threads.length; i++) {
+    // }
+    // for (int i = 0; i < threads.length; i++) {
     //  threads[i].start();
-    //} //TODO: 2 lineas vs 6, pero el for es mas entendible
-      
+    // } //TODO: 2 lineas vs 6, pero el for es mas entendible
+
   }
 }

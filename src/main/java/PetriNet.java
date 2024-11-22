@@ -137,6 +137,6 @@ public class PetriNet {
 
   public boolean invariantArchived() {
     return invariantArchived; // todo: protect this becauso many threads can access auque es para
-                              // lectura
+    // lectura
   }
 }

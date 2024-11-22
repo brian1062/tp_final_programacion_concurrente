@@ -78,13 +78,14 @@ public class PetriNetConf {
   public PetriNetConf() {
     // Initialize places list with their name and corresponding number of tokens
     IntStream.range(0, INITIAL_MARKING.length)
-             .mapToObj(i -> new Place("P" + i, INITIAL_MARKING[i]))
-             .forEach(places::add);
-             
+        .mapToObj(i -> new Place("P" + i, INITIAL_MARKING[i]))
+        .forEach(places::add);
+
     // Initialize transitions list
     IntStream.range(0, INCIDENCE_MATRIX_IN[0].length)
-             .mapToObj(i -> new Transition(i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]))
-             .forEach(transitions::add);
+        .mapToObj(
+            i -> new Transition(i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]))
+        .forEach(transitions::add);
   }
 
   // Getters
@@ -112,14 +113,14 @@ public class PetriNetConf {
     if (sequenceNumber < 0 || sequenceNumber >= TRANSITIONS_THREADS.length) {
       throw new IllegalArgumentException("Index for TRANSITIONS_THREADS invalid");
     }
-    
+
     List<Transition> sequence = new ArrayList<>();
     int[] transitionIndex = TRANSITIONS_THREADS[sequenceNumber];
 
     for (int tIndex : transitionIndex) {
       sequence.add(transitions.get(tIndex));
     }
-    
+
     return sequence;
   }
 
