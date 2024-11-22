@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class PetriNetConf {
   private static final int MAX_TIME = 600000000;
   private static final int[] INITIAL_MARKING = {5, 1, 0, 0, 5, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
+  private final List<Place> places = new ArrayList<>();
+  private final List<Transition> transitions = new ArrayList<>();
 
   private static final int[][] INCIDENCE_MATRIX_OUT = { // I+
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, // P0
@@ -55,6 +58,13 @@ public class PetriNetConf {
     {0, MAX_TIME}, // T11
   };
 
+  /*
+   * Define the sequence of transitions for each thread
+   * The sequence is defined by the index of the transitions in the transitions list
+   * For example, the sequence for thread 0 is {T0, T1}
+   */
+  // TODO: no convendria hacer que este array sea una lista de listas? List<List<Transition>>?
+  // Simplificaria la funcion getSequence
   private static final int[][] TRANSITIONS_THREADS = {
     {0, 1}, // Thread 0
     {2, 5}, // Thread 1
@@ -64,19 +74,17 @@ public class PetriNetConf {
     {11} // Thread 5
   };
 
-  private final List<Place> places = new ArrayList<>();
-  private final List<Transition> transitions = new ArrayList<>();
-
+  // Constructor
   public PetriNetConf() {
-    // Initialize places list
-    for (int i = 0; i < INITIAL_MARKING.length; i++) {
-      places.add(new Place("P" + i, INITIAL_MARKING[i]));
-    }
+    // Initialize places list with their name and corresponding number of tokens
+    IntStream.range(0, INITIAL_MARKING.length)
+             .mapToObj(i -> new Place("P" + i, INITIAL_MARKING[i]))
+             .forEach(places::add);
+             
     // Initialize transitions list
-    for (int i = 0; i < INCIDENCE_MATRIX_OUT[0].length; i++) {
-      transitions.add(
-          new Transition(i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]));
-    }
+    IntStream.range(0, INCIDENCE_MATRIX_IN[0].length)
+             .mapToObj(i -> new Transition(i, TIME_TRANSITION_MATRIX[i][0], TIME_TRANSITION_MATRIX[i][1]))
+             .forEach(transitions::add);
   }
 
   // Getters
@@ -100,19 +108,22 @@ public class PetriNetConf {
     return transitions;
   }
 
-  public List<Transition> getSequence(int index) {
+  public List<Transition> getSequence(int sequenceNumber) {
+    if (sequenceNumber < 0 || sequenceNumber >= TRANSITIONS_THREADS.length) {
+      throw new IllegalArgumentException("Index for TRANSITIONS_THREADS invalid");
+    }
+    
     List<Transition> sequence = new ArrayList<>();
-    int[] transitionIndex = TRANSITIONS_THREADS[index];
+    int[] transitionIndex = TRANSITIONS_THREADS[sequenceNumber];
+
     for (int tIndex : transitionIndex) {
-      if (tIndex < 0 || tIndex >= transitions.size()) {
-        throw new IllegalArgumentException("Index invalid");
-      }
       sequence.add(transitions.get(tIndex));
     }
+    
     return sequence;
   }
 
-  public int getNumbersOfSequence() {
+  public int getNumberOfSequences() {
     return TRANSITIONS_THREADS.length;
   }
 }

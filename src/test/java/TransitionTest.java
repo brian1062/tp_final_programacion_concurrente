@@ -22,6 +22,11 @@ public class TransitionTest {
   }
 
   @Test
+  public void testGetMaxTime() {
+    assertEquals(6000, transition.getMaxTime());
+  }
+
+  @Test
   public void testSetTime() {
     transition.setTime(30);
     assertEquals(30, transition.getTime());

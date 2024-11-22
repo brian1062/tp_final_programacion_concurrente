@@ -14,6 +14,19 @@ public class Transition {
     this.isImmediate = delayTime == 0;
   }
 
+  // TODO: remove (unused?)
+  public void setTime(int delayTime) {
+    if (delayTime < 0) {
+      throw new IllegalArgumentException("Time cannot be negative");
+    }
+    this.delayTime = delayTime;
+  }
+
+  public boolean isImmediate() {
+    return isImmediate;
+  }
+
+  // Getters
   public int getNumber() {
     return number;
   }
@@ -26,15 +39,7 @@ public class Transition {
     return delayTime;
   }
 
-  // todo: remove unused
-  public void setTime(int delayTime) {
-    if (delayTime < 0) {
-      throw new IllegalArgumentException("Time cannot be negative");
-    }
-    this.delayTime = delayTime;
-  }
-
-  public boolean isImmediate() {
-    return isImmediate;
+  public int getMaxTime() {
+    return maxTime;
   }
 }

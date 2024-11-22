@@ -8,6 +8,14 @@ public class Place {
     this.tokens = tokens;
   }
 
+  // Setters
+  public void setTokens(int tokens) {
+    if (tokens < 0) {
+      throw new IllegalArgumentException("Tokens cannot be negative");
+    }
+    this.tokens = tokens;
+  }
+
   // Getters
   public int getTokens() {
     return tokens;
@@ -15,13 +23,5 @@ public class Place {
 
   public String getName() {
     return name;
-  }
-
-  // Setters
-  public void setTokens(int tokens) {
-    if (tokens < 0) {
-      throw new IllegalArgumentException("Tokens cannot be negative");
-    }
-    this.tokens = tokens;
   }
 }
