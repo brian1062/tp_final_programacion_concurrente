@@ -66,7 +66,7 @@ class Monitor implements MonitorInterface {
    *
    * @return true if the invariants target is achieved, false otherwise.
    */
-  public boolean petriNetIsShutdown() {
+  public boolean petriNetHasFinished() {
     return petriNet.invariantsTargetAchieved();
   }
 }
