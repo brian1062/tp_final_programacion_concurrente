@@ -18,7 +18,7 @@ public class Segments implements Runnable {
       for (Transition t : sequence) {
         monitor.fireTransition(t.getNumber());
 
-        if (monitor.petriNetIsShutdown()) {
+        if (monitor.petriNetHasFinished()) {
           isRunning.set(false);
           break;
         }
