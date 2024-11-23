@@ -53,7 +53,7 @@ public class PetriNet {
    *
    * @param transitionIndex The index of the transition to fire in the input incidence matrix
    */
-  public boolean fireTransition(int transitionIndex) {
+  public boolean tryFireTransition(int transitionIndex) {
     Transition transitionFromIndex = transitions.get(transitionIndex);
 
     // If not enabled, return false
@@ -106,14 +106,12 @@ public class PetriNet {
   }
 
   /** Prints the current marking of the Petri net. */
-  public String printMarking() {
+  public String getStringMarking() {
     String markingString =
         IntStream.range(0, marking.length)
             .mapToObj(placeIndex -> String.valueOf("P" + placeIndex + ": " + marking[placeIndex]))
             .collect(Collectors.joining(" "));
 
-    // Print marking string to the console
-    // System.out.println(markingString);
     return markingString;
   }
 
@@ -163,7 +161,6 @@ public class PetriNet {
   }
 
   public boolean invariantsTargetAchieved() {
-    return invariantsTargetAchieved; // TODO: protect this because many threads can access
-    // lectura
+    return invariantsTargetAchieved; 
   }
 }

@@ -1,6 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,19 +36,19 @@ public class PetriNetTest {
   @Test
   public void testFailFireTransitions() {
     int[] actualMarking = petriNet.getMarking();
-    petriNet.fireTransition(10);
+    petriNet.tryFireTransition(10);
     assertArrayEquals(actualMarking, petriNet.getMarking());
   }
 
   @Test
   public void testFireTransitions() {
-    petriNet.fireTransition(0);
+    petriNet.tryFireTransition(0);
     int[] newMarking = {4, 0, 1, 0, 4, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0};
     assertArrayEquals(newMarking, petriNet.getMarking());
     newMarking[1] = 1;
     newMarking[2] = 0;
     newMarking[3] = 1;
-    petriNet.fireTransition(1);
+    petriNet.tryFireTransition(1);
     assertArrayEquals(newMarking, petriNet.getMarking());
   }
 }

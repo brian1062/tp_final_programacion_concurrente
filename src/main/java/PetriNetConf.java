@@ -63,8 +63,6 @@ public class PetriNetConf {
    * The sequence is defined by the index of the transitions in the transitions list
    * For example, the sequence for thread 0 is {T0, T1}
    */
-  // TODO: no convendria hacer que este array sea una lista de listas? List<List<Transition>>?
-  // Simplificaria la funcion getSequence
   private static final int[][] TRANSITIONS_THREADS = {
     {0, 1}, // Thread 0
     {2, 5}, // Thread 1
@@ -109,7 +107,7 @@ public class PetriNetConf {
     return transitions;
   }
 
-  public List<Transition> getSequence(int sequenceNumber) {
+  public List<Transition> getTransitionSequence(int sequenceNumber) {
     if (sequenceNumber < 0 || sequenceNumber >= TRANSITIONS_THREADS.length) {
       throw new IllegalArgumentException("Index for TRANSITIONS_THREADS invalid");
     }

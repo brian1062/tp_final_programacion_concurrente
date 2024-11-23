@@ -1,7 +1,6 @@
 import java.util.Arrays;
 
 public class Main {
-  // static boolean condicion = true;
 
   public static void main(String[] args) {
 
@@ -26,7 +25,7 @@ public class Main {
     Monitor monitor = Monitor.getMonitor(petriNet);
 
     // Create and start threads
-    Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getSequence(i), monitor)));
+    Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getTransitionSequence(i), monitor)));
     Arrays.stream(threads).forEach(Thread::start);
   }
 }

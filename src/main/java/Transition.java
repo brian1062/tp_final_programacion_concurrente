@@ -14,7 +14,6 @@ public class Transition {
     this.isImmediate = delayTime == 0;
   }
 
-  // TODO: remove (unused?)
   public void setTime(int delayTime) {
     if (delayTime < 0) {
       throw new IllegalArgumentException("Time cannot be negative");

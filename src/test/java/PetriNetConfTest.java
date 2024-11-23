@@ -59,7 +59,7 @@ class PetriNetConfTest {
 
   @Test
   void testGetSequenceValidIndex() {
-    List<Transition> sequence = petriNetConf.getSequence(0);
+    List<Transition> sequence = petriNetConf.getTransitionSequence(0);
     assertThat(sequence).hasSize(2);
     assertThat(sequence.get(0).getNumber()).isEqualTo(0); // T0
     assertThat(sequence.get(1).getNumber()).isEqualTo(1); // T1
@@ -67,11 +67,11 @@ class PetriNetConfTest {
 
   @Test
   void testGetSequenceInvalidIndex() {
-    assertThatThrownBy(() -> petriNetConf.getSequence(-1))
+    assertThatThrownBy(() -> petriNetConf.getTransitionSequence(-1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Index for TRANSITIONS_THREADS invalid");
 
-    assertThatThrownBy(() -> petriNetConf.getSequence(6))
+    assertThatThrownBy(() -> petriNetConf.getTransitionSequence(6))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Index for TRANSITIONS_THREADS invalid");
   }
