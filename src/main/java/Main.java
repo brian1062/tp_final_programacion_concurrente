@@ -25,7 +25,8 @@ public class Main {
     Monitor monitor = Monitor.getMonitor(petriNet);
 
     // Create and start threads
-    Arrays.setAll(threads, i -> new Thread(new Segments(rdPConf.getTransitionSequence(i), monitor)));
+    Arrays.setAll(
+        threads, i -> new Thread(new Segments(rdPConf.getTransitionSequence(i), monitor)));
     Arrays.stream(threads).forEach(Thread::start);
   }
 }

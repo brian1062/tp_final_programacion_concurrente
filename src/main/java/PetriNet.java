@@ -161,6 +161,6 @@ public class PetriNet {
   }
 
   public boolean invariantsTargetAchieved() {
-    return invariantsTargetAchieved; 
+    return invariantsTargetAchieved;
   }
 }

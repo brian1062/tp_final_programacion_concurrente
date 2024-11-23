@@ -1,8 +1,8 @@
 import java.util.concurrent.Semaphore;
 
 /**
- * Monitor class for managing synchronized interactions with a Petri Net.
- * Ensures only one instance of Monitor is created using the Singleton pattern.
+ * Monitor class for managing synchronized interactions with a Petri Net. Ensures only one instance
+ * of Monitor is created using the Singleton pattern.
  */
 class Monitor implements MonitorInterface {
 
@@ -35,7 +35,6 @@ class Monitor implements MonitorInterface {
     }
     return monitor;
   }
-
 
   /**
    * Attempts to fire a transition in the associated Petri Net.
@@ -72,9 +71,7 @@ class Monitor implements MonitorInterface {
   }
 }
 
-/**
- * Interface for Monitor functionality.
- */
+/** Interface for Monitor functionality. */
 interface MonitorInterface {
   boolean fireTransition(int transition);
 }
