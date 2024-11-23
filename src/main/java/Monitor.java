@@ -3,7 +3,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class Monitor implements MonitorInterface {
   private static Monitor monitor = null;
-  boolean succesFire = false;
+  boolean isFireSuccessful = false;
   // Policy policyQueue;
   // Policy policy;
   PetriNet petriNet;
@@ -12,7 +12,7 @@ class Monitor implements MonitorInterface {
 
   AtomicBoolean isRunning = new AtomicBoolean(true);
 
-  //
+  // Using Singleton pattern to ensure that only one instance of Monitor is created
   public static Monitor getMonitor(PetriNet petriNet) {
     if (monitor == null) {
       monitor = new Monitor(petriNet);
@@ -32,14 +32,14 @@ class Monitor implements MonitorInterface {
     try {
       mutex.acquire();
     } catch (Exception e) {
-      // todo: add some exception
+      e.printStackTrace();
     }
-    succesFire = true;
-    while (succesFire) {
-      succesFire = petriNet.fireTransition(transitionIndex);
-      if (succesFire) {
+    isFireSuccessful = true;
+    while (isFireSuccessful) {
+      isFireSuccessful = petriNet.fireTransition(transitionIndex);
+      if (isFireSuccessful) {
         System.out.println(
-            "Transition fire: " + transitionIndex + " Marcado: " + petriNet.printMarking());
+            "Transition fired: " + transitionIndex + " Marking: " + petriNet.printMarking());
       }
     }
     mutex.release();
@@ -47,7 +47,7 @@ class Monitor implements MonitorInterface {
   }
 
   public boolean petriNetIsShutdown() {
-    return petriNet.invariantArchived();
+    return petriNet.invariantsTargetAchieved();
   }
 }
 

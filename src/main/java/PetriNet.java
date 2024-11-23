@@ -2,18 +2,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class PetriNet {
   private List<Transition> transitions;
   private List<Place> places;
   private List<Transition> enabledTransitions = new ArrayList<>();
-  private int countInvariant = 0;
-  private boolean invariantArchived = false;
-  private final int maxInvariant;
+  private int invariantsCount = 0;
+  private boolean invariantsTargetAchieved = false;
+  private final int invariantsCountTarget;
   private int[][] incidenceMatrixOut;
   private int[][] incidenceMatrixIn;
   private int[] marking;
   private final int placesLength;
+  private final int LAST_TRANSITION = 11;
+  private final String LOG_PATH = "/tmp/petriNetLog.txt";
 
   // PolicyFactory policyFactory = new PolicyFactory(new PolicyBalancedType());
   // PetriNet petriNet;
@@ -33,27 +37,28 @@ public class PetriNet {
       int[][] incidenceMatrixOut,
       int[][] incidenceMatrixIn,
       int[] marking,
-      int maxInvariant) {
+      int invariantsCountTarget) {
     this.transitions = transitions;
     this.places = places;
     this.incidenceMatrixOut = incidenceMatrixOut;
     this.incidenceMatrixIn = incidenceMatrixIn;
     this.marking = marking;
     this.placesLength = places.size();
-    this.maxInvariant = maxInvariant;
+    this.invariantsCountTarget = invariantsCountTarget;
     updateEnabledTransitions(); // Initialize the enabled transitions
   }
 
   /**
    * Fires a transition in the Petri net.
    *
-   * @param transitionIndex The index of the transition to fire in the input incidence matriz
+   * @param transitionIndex The index of the transition to fire in the input incidence matrix
    */
   public boolean fireTransition(int transitionIndex) {
     Transition transitionFromIndex = transitions.get(transitionIndex);
 
+    // If not enabled, return false
     if (!enabledTransitions.contains(transitionFromIndex)) {
-      return false; // If not enabled, print a message and exit the function
+      return false;
     }
 
     // Iterate over all places in the Petri net
@@ -61,26 +66,34 @@ public class PetriNet {
         .forEach(
             placeIndex -> {
               // If there is an input arc from the place to the transition
-              if (incidenceMatrixIn[placeIndex][transitionIndex] > 0) {
+              // TODO: if the transition IS enabled, then there's no need to check for IN/OUT incidence matrix values
+              //if (incidenceMatrixIn[placeIndex][transitionIndex] > 0) {
+              //if (incidenceMatrixIn[placeIndex][transitionIndex] > 0 && marking[placeIndex] > incidenceMatrixIn[placeIndex][transitionIndex]) { // TODO: remove if it breaks the code
                 // marking[placeIndex]--; // Remove tokens from the input places
-                marking[placeIndex] =
-                    marking[placeIndex]
-                        - incidenceMatrixIn[placeIndex][
-                            transitionIndex]; // Remove tokens from the input places
-              }
+              marking[placeIndex] =
+                  marking[placeIndex]
+                      - incidenceMatrixIn[placeIndex][
+                          transitionIndex]; // Remove tokens from the input places
+              //}
               // If there is an output arc from the transition to the place
-              if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
+              //if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
+                //if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
                 // marking[placeIndex]++; // Add tokens to the output places
                 marking[placeIndex] =
                     marking[placeIndex]
                         + incidenceMatrixOut[placeIndex][
                             transitionIndex]; // Add tokens to the output places
-              }
+              //}
             });
-    if (transitionIndex == 11) {
-      countInvariant++;
-      if (countInvariant >= maxInvariant) {
-        invariantArchived = true;
+      
+    // Write the transition number to the log file
+    writeLog(LOG_PATH, transitionIndex);
+    
+    if (transitionIndex == LAST_TRANSITION) {
+      invariantsCount++;
+      writeLog(LOG_PATH, -1); // Writes a new line to the file, ending the sequence
+      if (invariantsCount >= invariantsCountTarget) {
+        invariantsTargetAchieved = true;
       }
     }
 
@@ -93,7 +106,7 @@ public class PetriNet {
   public String printMarking() {
     String markingString =
         IntStream.range(0, marking.length)
-            .mapToObj(placeIndex -> String.valueOf(marking[placeIndex]))
+            .mapToObj(placeIndex -> String.valueOf("P" + placeIndex + ": " + marking[placeIndex]))
             .collect(Collectors.joining(" "));
 
     // Print marking string to the console
@@ -124,6 +137,18 @@ public class PetriNet {
     enabledTransitions.stream().map(Transition::getName).forEach(System.out::println);
   }
 
+  public static void writeLog(String filePath, int transition) {
+    try (FileWriter writer = new FileWriter(filePath, true)) {
+        if (transition < 0) {
+            writer.write(System.lineSeparator()); // Adds a new line
+        } else {
+            writer.write(String.valueOf("T" + transition + " ")); // Writes the transition number to the file
+        }
+    } catch (IOException e) {
+        System.err.println("An error occurred while writing to the file: " + e.getMessage());
+    }
+}
+
   // Getters
   public int[] getMarking() {
     return marking;
@@ -133,8 +158,8 @@ public class PetriNet {
     return enabledTransitions;
   }
 
-  public boolean invariantArchived() {
-    return invariantArchived; // todo: protect this becauso many threads can access auque es para
+  public boolean invariantsTargetAchieved() {
+    return invariantsTargetAchieved; // TODO: protect this because many threads can access
     // lectura
   }
 }
