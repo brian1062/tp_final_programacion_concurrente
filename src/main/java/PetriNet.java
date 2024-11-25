@@ -19,9 +19,6 @@ public class PetriNet {
   private final int LAST_TRANSITION = 11;
   private final String LOG_PATH = "/tmp/petriNetLog.txt";
 
-  // PolicyFactory policyFactory = new PolicyFactory(new PolicyBalancedType());
-  // PetriNet petriNet;
-
   /**
    * Constructor for the PetriNet class.
    *
@@ -66,27 +63,19 @@ public class PetriNet {
         .forEach(
             placeIndex -> {
               // If there is an input arc from the place to the transition
-              // TODO: if the transition IS enabled, then there's no need to check for IN/OUT
-              // incidence matrix values
-              // if (incidenceMatrixIn[placeIndex][transitionIndex] > 0) {
-              // if (incidenceMatrixIn[placeIndex][transitionIndex] > 0 && marking[placeIndex] >
-              // incidenceMatrixIn[placeIndex][transitionIndex]) { // TODO: remove if it breaks the
-              // code
-              // marking[placeIndex]--; // Remove tokens from the input places
+              if (incidenceMatrixIn[placeIndex][transitionIndex] > 0) {
               marking[placeIndex] =
                   marking[placeIndex]
                       - incidenceMatrixIn[placeIndex][
                           transitionIndex]; // Remove tokens from the input places
-              // }
+              }
               // If there is an output arc from the transition to the place
-              // if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
-              // if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
-              // marking[placeIndex]++; // Add tokens to the output places
+              if (incidenceMatrixOut[placeIndex][transitionIndex] > 0) {
               marking[placeIndex] =
                   marking[placeIndex]
                       + incidenceMatrixOut[placeIndex][
                           transitionIndex]; // Add tokens to the output places
-              // }
+              }
             });
 
     // Write the transition number to the log file
