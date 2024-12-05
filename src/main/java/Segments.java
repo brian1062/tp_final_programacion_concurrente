@@ -19,10 +19,13 @@ public class Segments implements Runnable {
         monitor.fireTransition(t.getNumber());
 
         if (monitor.petriNetHasFinished()) {
+          System.out.println("Petri net has finished. Exiting thread.");
+          System.out.println("Este es el mensaje del hilo: " + Thread.currentThread().getName());
           isRunning.set(false);
           break;
         }
       }
     }
+    System.out.println("Este es el mensaje del hilo: " + Thread.currentThread().getName());
   }
 }

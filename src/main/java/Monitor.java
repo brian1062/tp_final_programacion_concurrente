@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -12,10 +13,11 @@ class Monitor implements MonitorInterface {
   // Singleton instance of the Monitor
   private static Monitor monitor = null;
   boolean isFireSuccessful = false;
+  private final PrioritySemaphore priorityMutex = new PrioritySemaphore();
   PetriNet petriNet; // The associated Petri Net instance
   private final String LOG_PATH = "/tmp/petriNetResults.txt";
 
-  private final Semaphore mutex; // Mutex to ensure thread safety
+  // private final Semaphore mutex; // Mutex to ensure thread safety
 
   /**
    * Private constructor to enforce Singleton pattern.
@@ -23,7 +25,7 @@ class Monitor implements MonitorInterface {
    * @param petriNet the PetriNet instance to control.
    */
   private Monitor(PetriNet petriNet) {
-    this.mutex = new Semaphore(1, true);
+    // this.mutex = new Semaphore(1, true);
     this.petriNet = petriNet;
   }
 
@@ -49,44 +51,48 @@ class Monitor implements MonitorInterface {
   @Override
   public boolean fireTransition(int transitionIndex) {
     try {
-      mutex.acquire();
-    } catch (Exception e) {
+      priorityMutex.acquire(false); 
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       e.printStackTrace();
     }
-    isFireSuccessful = true;
-    while (isFireSuccessful) {
-      isFireSuccessful = petriNet.tryFireTransition(transitionIndex);
-      if (isFireSuccessful) {
-        // Print Transition fire and log it!!
-        String outputMessage =
-            "Transition fired: {T"
-                + transitionIndex
-                + "}"
-                + " Marking: {"
-                + petriNet.getStringMarking()
-                + "}";
-        System.out.println(outputMessage);
-        String timestamp = LocalDateTime.now().toString();
-        writeLog(timestamp + ": " + outputMessage);
+
+      isFireSuccessful = true;
+
+      while (isFireSuccessful) {
+        isFireSuccessful = petriNet.tryFireTransition(transitionIndex);
+        if (isFireSuccessful) {
+          // Print Transition fire and log it!!
+          String outputMessage =
+              "Transition fired: {T"
+                  + transitionIndex
+                  + "}"
+                  + " Marking: {"
+                  + petriNet.getStringMarking()
+                  + "}";
+          System.out.println(outputMessage);
+          String timestamp = LocalDateTime.now().toString();
+          writeLog(timestamp + ": " + outputMessage);
+        }
+
+        // if alpha > 0 so transitions is timed else is immediate
+        Transition t = petriNet.getTransitionPerIndex(transitionIndex);
+        if (t.getTime() > 0) {
+          priorityMutex.release();
+          try {
+            Thread.sleep(t.getTime());
+            priorityMutex.acquire(true);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+          }
+        }
       }
 
-      // if alpha > 0 so transitions is timed else is immediate
-      Transition t = petriNet.getTransitionPerIndex(transitionIndex);
-      if (t.getTime() > 0) {
-        mutex.release();
-        try {
-          Thread.sleep(t.getTime());
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        try {
-          mutex.acquire();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    mutex.release();
+
+    // finally {
+    // }
+    priorityMutex.release();
     return false;
   }
 

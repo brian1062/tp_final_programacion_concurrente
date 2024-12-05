@@ -74,10 +74,19 @@ public class PetriNet implements AutoCloseable {
 
   public boolean tryFireTransition(int transitionIndex) {
     Transition transitionFromIndex = transitions.get(transitionIndex);
-
     // If not enabled, return false
     if (!enabledTransitions.contains(transitionFromIndex)) {
       return false;
+    }
+
+    if(!transitionFromIndex.isImmediate()){
+      if(transitionFromIndex.getRunningTime()==0){
+        transitionFromIndex.sensitizeTime();
+        return false;
+      }
+      if(transitionFromIndex.getRemainingTime()>0){
+        return false;
+      }
     }
 
     // Iterate over all places in the Petri net
@@ -118,6 +127,8 @@ public class PetriNet implements AutoCloseable {
         invariantsTargetAchieved = true;
       }
     }
+
+    transitionFromIndex.deSensitizeTime(); //clean runningTIme
 
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();

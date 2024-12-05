@@ -35,14 +35,14 @@ public class Transition {
    * Sensitizes the transition in time. If the transition is not immediate, sets the current time as
    * the start time.
    */
-  private void sensitizeTime() {
+  public void sensitizeTime() {
     if (!isImmediate) {
       this.runningTime = System.currentTimeMillis();
     }
   }
 
   /** Desensitizes the transition in time. Resets the start time to zero. */
-  private void deSensitizeTime() {
+  public void deSensitizeTime() {
     this.runningTime = 0;
   }
 
@@ -108,5 +108,8 @@ public class Transition {
    */
   public long getRemainingTime() {
     return delayTime - (System.currentTimeMillis() - runningTime);
+  }
+  public long getRunningTime(){
+    return runningTime;
   }
 }
