@@ -79,12 +79,12 @@ public class PetriNet implements AutoCloseable {
       return false;
     }
 
-    if(!transitionFromIndex.isImmediate()){
-      if(transitionFromIndex.getRunningTime()==0){
+    if (!transitionFromIndex.isImmediate()) {
+      if (transitionFromIndex.getRunningTime() == 0) {
         transitionFromIndex.sensitizeTime();
         return false;
       }
-      if(transitionFromIndex.getRemainingTime()>0){
+      if (transitionFromIndex.getRemainingTime() > 0) {
         return false;
       }
     }
@@ -128,7 +128,7 @@ public class PetriNet implements AutoCloseable {
       }
     }
 
-    transitionFromIndex.deSensitizeTime(); //clean runningTIme
+    transitionFromIndex.deSensitizeTime(); // clean runningTIme
 
     // Update the enabled transitions after firing the transition
     updateEnabledTransitions();

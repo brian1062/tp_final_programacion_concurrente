@@ -109,7 +109,8 @@ public class Transition {
   public long getRemainingTime() {
     return delayTime - (System.currentTimeMillis() - runningTime);
   }
-  public long getRunningTime(){
+
+  public long getRunningTime() {
     return runningTime;
   }
 }
