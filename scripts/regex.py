@@ -2,7 +2,7 @@ import re
 import sys
 import os
 
-# Invatiants Transitions for Our Petri Net
+# Petri Net's Transition Invariants
 invariants = {
     "T0 T1 T2 T5 T6 T9 T10 T11": 0,
     "T0 T1 T2 T5 T7 T8 T11": 0,
@@ -11,89 +11,99 @@ invariants = {
 }
 
 # Regular expresion
-pattern = r"(T0)(.*?)(T1)(.*?)((T2)(.*?)(T5)|(T3)(.*?)(T4))(.*?)((T6)(.*?)(T9)(.*?)(T10)|(T7)(.*?)(T8))(.*?)(T11)"
+pattern = r"(T0)(.*?)?(T1)(.*?)?((T2)(.*?)?(T5)|(T3)(.*?)?(T4))(.*?)?((T6)(.*?)?(T9)(.*?)?(T10)|(T7)(.*?)?(T8))(.*?)?(T11)"
 sub = r'\g<2>\g<4>\g<7>\g<10>\g<12>\g<15>\g<17>\g<20>\g<22>'
 
-# Path to .txt file
+# Path to input file
 file_path = "/tmp/transitionsSequence.txt"
 
 def read_file(file_path):
+    """Read input file and return it's content"""
     try:
         with open(file_path, 'r') as file:
-            content = file.read().replace("\n", "")  # delete endline
-        print(f"Transitions read from file: {content}\n")
+            content = file.read().replace("\n", "")  # Delete endline
         return content
+
     except FileNotFoundError:
         print(f"❌ File {file_path} not found.")
         # Exit program with error
         sys.exit(1)
-    
-def get_removed_transitions(match, sub):
-    """get transitions matches to delete"""
-    removed_transitions = []
+
+def get_matched_transitions(match, sub):
+    """Get transitions matches to delete"""
+    matched_transitions = []
     for i in range(1, len(match.groups()) + 1):
         # Check if group != None
         if f"\\g<{i}>" not in sub and match.group(i) is not None and i != 5 and i != 13:
-            removed_transitions.append(match.group(i))
+            matched_transitions.append(match.group(i))
     
-    # Filter transitions duplicates
-    return removed_transitions
+    # Filter transitions duplicates and None values
+    return matched_transitions
 
 
 def update_invariants(transitions):
-    """update invariants counter"""
+    """Update invariants counter"""
     if transitions in invariants:
         invariants[transitions] +=1
+    else:
+        print(f"❌ Transition invariant {transitions} not found.")
+        # Exit program with error
+        sys.exit(1)
 
-def process_matchs(content, pattern, sub):
-    """ process all transition invariants found in log file"""
-    match_num= 1
+def process_matches(content, pattern, sub):
+    """Process all transition invariants found in log file"""
+    print(f"\nInitial transitions:\n{content}\n")
+
+    match_num = 0
+
     while True:
-        found_match = False
-        matches = re.finditer(pattern, content)
-
-        for m in matches:
-            found_match = True
-            removed_transitions = get_removed_transitions(m, sub)
-            print(f"Removed transitions: {removed_transitions}")
-
-            # Print transitions deleted
-            if removed_transitions:
-                transition_string = ' '.join(removed_transitions)
-                update_invariants(transition_string)
-            
-            # Update old content
-            print(f"Old content: {content}")
-            content = re.sub(pattern, sub, content, count=1)
-
-            # Print remaining transitions if content is not empty
-            if content.strip():
-                print(f"Remaining transitions: {content.strip()}\n")
-            match_num += 1
-            
-            break
-        
-        if not found_match:
+        matches = list(re.finditer(pattern, content))
+        if not matches:
             break
 
-    if match_num == 1:
+        match_num += 1
+
+        # Process the first match only
+        m = matches[0]
+        matched_transitions = get_matched_transitions(m, sub)
+
+        # Print transitions deleted
+        print(f"Match {match_num}: {' '.join(matched_transitions)}")
+
+        # Update transition invariants counter
+        update_invariants(' '.join(matched_transitions))
+
+        # Update content by deleting the matched transitions
+        content = re.sub(pattern, sub, content, count=1)
+
+        # Print remaining transitions if content is not empty
+        if content.strip():
+            print(f"Remaining transitions: {content.strip()}\n")
+        else:
+            break
+
+    if match_num == 0:
         print("❌ No matches found that match the pattern.")
+
+    print("\n✅ All transitions have been processed.")
 
     return content
 
 def analyze_transitions(file_path):
+    """Analyze transitions from input file"""
 
     content = read_file(file_path)
 
-    content = process_matchs(content, pattern, sub)
+    content = process_matches(content, pattern, sub)
 
-    print("\n✅ Complete analysis.")
     if content.strip():
-        print(f"\n❌ There were transitions that did not match the pattern: {content.strip()}")
+        print(f"\n❌ There were transitions that couldn't fit into a transition invariant: {content.strip()}")
     else:
-        print("\n✅ All transitions were processed.")
+        print("\n✅ All transitions matched a transition invariant.")
 
-    print("\nNumber of Invariant:")
+
+def calculate_number_of_matches_for_each_invariant(invariants):
+    print("\nNumber of times each transition invariant was found:")
     for invariant, count in invariants.items():
         print(f"{invariant}: {count} times")
 
@@ -125,13 +135,14 @@ def calculate_percentage_from_invariants(invariants):
     else:
         T6_percentage = T7_percentage = 0
 
-    print("Percentages calculated from invariants:")
+    print(f"\nPercentages calculated from invariants:")
     print(f"T2: {T2_percentage:.2f}%↑       T6: {T6_percentage:.2f}%↑")
     print(f"T3: {T3_percentage:.2f}%↓       T7: {T7_percentage:.2f}%↓")   
    
 
 # RUN PROGRAM
 analyze_transitions(file_path)
+calculate_number_of_matches_for_each_invariant(invariants)
 calculate_percentage_from_invariants(invariants)
 
 # Delete transitions file
