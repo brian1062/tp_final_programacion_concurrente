@@ -2,10 +2,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Monitor class for managing synchronized interactions with a Petri Net. Ensures only one instance
@@ -22,7 +19,7 @@ class Monitor implements MonitorInterface {
   private boolean end = false;
   private final Semaphore mutex; // Mutex to ensure thread safety
   private final Semaphore waitSem;
-  private final HashMap<Transition,Semaphore> transitionsMap;
+  private final HashMap<Transition, Semaphore> transitionsMap;
 
   /**
    * Private constructor to enforce Singleton pattern.
@@ -34,7 +31,7 @@ class Monitor implements MonitorInterface {
     this.waitSem = new Semaphore(1, true);
     this.petriNet = petriNet;
     this.transitionsMap = new HashMap<>();
-    for (Transition transition : petriNet.getTransitionList()){
+    for (Transition transition : petriNet.getTransitionList()) {
       this.transitionsMap.put(transition, new Semaphore(0));
     }
   }
@@ -63,26 +60,25 @@ class Monitor implements MonitorInterface {
     try {
       mutex.acquire();
 
-      if(petriNetHasFinished() || end){
+      if (petriNetHasFinished() || end) {
         mutex.release();
         transitionsMap.get(transition).acquire();
       }
 
-
-      while(true){
-        if(!petriNet.getEnabledTransitions().contains(transition)){
+      while (true) {
+        if (!petriNet.getEnabledTransitions().contains(transition)) {
           // System.out.println("transition not ready: " + transition.getName());
           mutex.release();
           transitionsMap.get(transition).acquire();
           continue;
         }
         if (transition.getTime() > 0) {
-          if (waitSem.availablePermits() == 1){
-             waitSem.acquire();
+          if (waitSem.availablePermits() == 1) {
+            waitSem.acquire();
 
             mutex.release();
             Transition trans = petriNet.getTransitionPerIndex(transition.getNumber());
-            if(trans.getRunningTime()==0){
+            if (trans.getRunningTime() == 0) {
               // System.out.println("transition here: " + transition.getName());
               trans.sensitizeTime();
             }
@@ -90,14 +86,15 @@ class Monitor implements MonitorInterface {
             Thread.sleep(transition.getTime());
             mutex.acquire();
             waitSem.release();
-            if(transition.getRemainingTime()<=0){
+            if (transition.getRemainingTime() <= 0) {
               break;
             }
           }
-          
-        }else{break;}//can fire transition
-      }
 
+        } else {
+          break;
+        } // can fire transition
+      }
 
       isFireSuccessful = petriNet.tryFireTransition(transition.getNumber());
       if (isFireSuccessful) {
@@ -114,18 +111,21 @@ class Monitor implements MonitorInterface {
         writeLog(timestamp + ": " + outputMessage);
       }
 
-      if(!petriNet.getEnabledTransitions().isEmpty()){
-        Transition next_t = petriNet.getEnabledTransitions().get(0);//here put the policy logic for select transition
+      if (!petriNet.getEnabledTransitions().isEmpty()) {
+        Transition next_t =
+            petriNet
+                .getEnabledTransitions()
+                .get(0); // here put the policy logic for select transition
         transitionsMap.get(next_t).release();
       }
 
-      if(petriNetHasFinished()){
+      if (petriNetHasFinished()) {
         System.exit(0);
       }
 
-  } catch (Exception e) {
-    e.printStackTrace();
- }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
     mutex.release();
     return true;
   }

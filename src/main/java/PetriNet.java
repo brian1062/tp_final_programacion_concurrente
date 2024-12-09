@@ -79,7 +79,6 @@ public class PetriNet implements AutoCloseable {
       return false;
     }
 
-
     // Iterate over all places in the Petri net
     IntStream.range(0, places.size())
         .forEach(
@@ -216,7 +215,8 @@ public class PetriNet implements AutoCloseable {
   public Transition getTransitionPerIndex(int nTransition) {
     return transitions.get(nTransition);
   }
-  public List<Transition> getTransitionList(){
+
+  public List<Transition> getTransitionList() {
     return transitions;
   }
 }
