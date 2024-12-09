@@ -1,6 +1,11 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Monitor class for managing synchronized interactions with a Petri Net. Ensures only one instance
@@ -11,11 +16,13 @@ class Monitor implements MonitorInterface {
   // Singleton instance of the Monitor
   private static Monitor monitor = null;
   boolean isFireSuccessful = false;
-  private final PrioritySemaphore priorityMutex = new PrioritySemaphore();
   PetriNet petriNet; // The associated Petri Net instance
   private final String LOG_PATH = "/tmp/petriNetResults.txt";
 
-  // private final Semaphore mutex; // Mutex to ensure thread safety
+  private boolean end = false;
+  private final Semaphore mutex; // Mutex to ensure thread safety
+  private final Semaphore waitSem;
+  private final HashMap<Transition,Semaphore> transitionsMap;
 
   /**
    * Private constructor to enforce Singleton pattern.
@@ -23,8 +30,13 @@ class Monitor implements MonitorInterface {
    * @param petriNet the PetriNet instance to control.
    */
   private Monitor(PetriNet petriNet) {
-    // this.mutex = new Semaphore(1, true);
+    this.mutex = new Semaphore(1, true);
+    this.waitSem = new Semaphore(1, true);
     this.petriNet = petriNet;
+    this.transitionsMap = new HashMap<>();
+    for (Transition transition : petriNet.getTransitionList()){
+      this.transitionsMap.put(transition, new Semaphore(0));
+    }
   }
 
   /**
@@ -47,23 +59,52 @@ class Monitor implements MonitorInterface {
    * @return true if the transition was successfully fired at least once, false otherwise.
    */
   @Override
-  public boolean fireTransition(int transitionIndex) {
+  public boolean fireTransition(Transition transition) {
     try {
-      priorityMutex.acquire(false);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      e.printStackTrace();
-    }
+      mutex.acquire();
 
-    isFireSuccessful = true;
+      if(petriNetHasFinished() || end){
+        mutex.release();
+        transitionsMap.get(transition).acquire();
+      }
 
-    while (isFireSuccessful) {
-      isFireSuccessful = petriNet.tryFireTransition(transitionIndex);
+
+      while(true){
+        if(!petriNet.getEnabledTransitions().contains(transition)){
+          // System.out.println("transition not ready: " + transition.getName());
+          mutex.release();
+          transitionsMap.get(transition).acquire();
+          continue;
+        }
+        if (transition.getTime() > 0) {
+          if (waitSem.availablePermits() == 1){
+             waitSem.acquire();
+
+            mutex.release();
+            Transition trans = petriNet.getTransitionPerIndex(transition.getNumber());
+            if(trans.getRunningTime()==0){
+              // System.out.println("transition here: " + transition.getName());
+              trans.sensitizeTime();
+            }
+            // isFireSuccessful = petriNet.tryFireTransition(transition.getNumber());
+            Thread.sleep(transition.getTime());
+            mutex.acquire();
+            waitSem.release();
+            if(transition.getRemainingTime()<=0){
+              break;
+            }
+          }
+          
+        }else{break;}//can fire transition
+      }
+
+
+      isFireSuccessful = petriNet.tryFireTransition(transition.getNumber());
       if (isFireSuccessful) {
         // Print Transition fire and log it!!
         String outputMessage =
             "Transition fired: {T"
-                + transitionIndex
+                + transition.getNumber()
                 + "}"
                 + " Marking: {"
                 + petriNet.getStringMarking()
@@ -73,24 +114,20 @@ class Monitor implements MonitorInterface {
         writeLog(timestamp + ": " + outputMessage);
       }
 
-      // if alpha > 0 so transitions is timed else is immediate
-      Transition t = petriNet.getTransitionPerIndex(transitionIndex);
-      if (t.getTime() > 0) {
-        priorityMutex.release();
-        try {
-          Thread.sleep(t.getTime());
-          priorityMutex.acquire(true);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          e.printStackTrace();
-        }
+      if(!petriNet.getEnabledTransitions().isEmpty()){
+        Transition next_t = petriNet.getEnabledTransitions().get(0);//here put the policy logic for select transition
+        transitionsMap.get(next_t).release();
       }
-    }
 
-    // finally {
-    // }
-    priorityMutex.release();
-    return false;
+      if(petriNetHasFinished()){
+        System.exit(0);
+      }
+
+  } catch (Exception e) {
+    e.printStackTrace();
+ }
+    mutex.release();
+    return true;
   }
 
   /**
@@ -118,5 +155,5 @@ class Monitor implements MonitorInterface {
 
 /** Interface for Monitor functionality. */
 interface MonitorInterface {
-  boolean fireTransition(int transition);
+  boolean fireTransition(Transition transition);
 }

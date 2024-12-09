@@ -79,15 +79,6 @@ public class PetriNet implements AutoCloseable {
       return false;
     }
 
-    if (!transitionFromIndex.isImmediate()) {
-      if (transitionFromIndex.getRunningTime() == 0) {
-        transitionFromIndex.sensitizeTime();
-        return false;
-      }
-      if (transitionFromIndex.getRemainingTime() > 0) {
-        return false;
-      }
-    }
 
     // Iterate over all places in the Petri net
     IntStream.range(0, places.size())
@@ -224,5 +215,8 @@ public class PetriNet implements AutoCloseable {
 
   public Transition getTransitionPerIndex(int nTransition) {
     return transitions.get(nTransition);
+  }
+  public List<Transition> getTransitionList(){
+    return transitions;
   }
 }
